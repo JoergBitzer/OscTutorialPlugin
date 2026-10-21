@@ -6,9 +6,9 @@ const bool g_forcePowerOf2(false); // should be true for FFT Processing
 
 // -------------- GUI -----------------
 // global GUI setting for VerySimpleSynth
-const int g_minGuiSize_x(640);
-const int g_maxGuiSize_x(1600);
-const int g_minGuiSize_y(400);
+const int g_minGuiSize_x(880);
+const int g_maxGuiSize_x(1760);
+const int g_minGuiSize_y(660);
 const float g_guiratio = float(g_minGuiSize_y)/g_minGuiSize_x;
 
 // ---------- presethandler ----------
@@ -37,4 +37,6 @@ const int g_labelHeight(18);
 const float g_labelFontSize(14.0f);
 const float g_versionFontSize(11.0f);
 const int g_versionHeight(14);
+const int g_controlsHeight(190);      // the row with the oscillator, envelope and output groups
+const int g_scopeControlWidth(130);   // the controls of the oscilloscope
 

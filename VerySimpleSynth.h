@@ -9,8 +9,16 @@
 #include "tools/ParameterSpec.h"
 #include "tools/ChoiceParameterSpec.h"
 #include "PluginSettings.h"
-#include "Oscillators.h"
+#include "oscillators/Oscillator.h"
+#include "oscillators/WavetableOscillator.h"
+#include "oscillators/PolyBlepOscillator.h"
+#include "oscillators/MinBlepOscillator.h"
+#include "oscillators/BlitOscillator.h"
+#include "oscillators/DpwOscillator.h"
+#include "oscillators/OversamplingOscillator.h"
 #include "SimpleEnvelope.h"
+#include "ScopeCapture.h"
+#include "Oscilloscope.h"
 
 class VerySimpleSynthAudioProcessor;
 
@@ -18,19 +26,31 @@ class VerySimpleSynthAudioProcessor;
 // Everything about a parameter is defined here once; tools/ParameterSpec.h makes the parameter
 // (jade::makeParameter) and its help text (jade::helpText, e.g. as tooltip) from it.
 // Choice parameters (combo boxes): tools/ChoiceParameterSpec.h. The order of the choices must
-// match the enums vss::OscillatorModel and vss::Waveform in Oscillators.h.
+// match the enums vss::OscillatorModel and vss::Waveform in oscillators/Oscillator.h.
 
 // ---------- oscillator ----------
 const struct
 {
 	const std::string ID = "Model";
 	const std::string name = "Model";
-	const std::vector<std::string> choices = { "Naive", "Wavetable", "PolyBLEP" };
+	const std::vector<std::string> choices = { "Naive", "Wavetable", "PolyBLEP", "PolyBLEP 4-point", "minBLEP",
+	                                           "BLIT", "DPW", "Oversampling 8x" };
 	const int defaultIndex = 0;
 	const std::string help = "How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), "
-	                         "Wavetable (band-limited tables, one per octave), PolyBLEP (naive waveform with "
-	                         "polynomial corrections at jumps and corners).";
+	                         "Wavetable (band-limited tables, one per octave), PolyBLEP and PolyBLEP 4-point (naive "
+	                         "waveform with polynomial corrections at jumps and corners), minBLEP (minimum-phase "
+	                         "corrections from a table), BLIT (integrated band-limited impulse trains), DPW "
+	                         "(differentiated antiderivative), Oversampling 8x (naive at 8 fs, filtered).";
 }g_paramModel;
+
+const struct
+{
+	const std::string ID = "LanczosSigma";
+	const std::string name = "Lanczos sigma";
+	const bool defaultIsOn = false;
+	const std::string help = "Wavetable only: weights the harmonics with Lanczos sigma factors, which reduces "
+	                         "the overshoot at jumps (Gibbs phenomenon) from 9 % to about 1 %.";
+}g_paramLanczosSigma;
 
 const struct
 {
@@ -149,6 +169,8 @@ public:
 
     // some necessary info for the host
     int getLatency(){return m_Latency;};
+    // the recordings of the oscillator output for the oscilloscope (GUI thread: copyLatest, setCycles)
+    ScopeCapture& getScope(){return m_scope;};
 
 private:
     void updateParameters();
@@ -171,6 +193,7 @@ private:
     // parameters (read once per synchronous block)
     std::atomic<float>* m_model = nullptr;
     std::atomic<float>* m_waveform = nullptr;
+    std::atomic<float>* m_lanczosSigma = nullptr;
     std::atomic<float>* m_octave = nullptr;
     std::atomic<float>* m_fineTune = nullptr;
     std::atomic<float>* m_attack = nullptr;
@@ -179,12 +202,21 @@ private:
     std::atomic<float>* m_release = nullptr;
     std::atomic<float>* m_level = nullptr;
 
-    // the three oscillator models; m_activeOscillator points to the chosen one
+    // all oscillator models; m_activeOscillator points to the chosen one
     vss::NaiveOscillator m_naiveOscillator;
     vss::WavetableOscillator m_wavetableOscillator;
-    vss::PolyBlepOscillator m_polyBlepOscillator;
+    vss::PolyBlepOscillator m_polyBlepOscillator { vss::PolyBlepOscillator::Order::TwoPoint };
+    vss::PolyBlepOscillator m_polyBlep4Oscillator { vss::PolyBlepOscillator::Order::FourPoint };
+    vss::MinBlepOscillator m_minBlepOscillator;
+    vss::BlitOscillator m_blitOscillator;
+    vss::DpwOscillator m_dpwOscillator;
+    vss::OversamplingOscillator m_oversamplingOscillator;
+    // in the order of vss::OscillatorModel
+    std::vector<vss::Oscillator*> m_oscillators;
     vss::Oscillator* m_activeOscillator = &m_naiveOscillator;
     vss::OscillatorModel m_activeModel = vss::OscillatorModel::Naive;
+
+    ScopeCapture m_scope;
 
     vss::SimpleEnvelope m_envelope;
 
@@ -213,18 +245,30 @@ private:
         juce::Label label;
         std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attachment;
     };
+    // a combo box with its name above
     struct Choice
     {
         juce::ComboBox comboBox;
         juce::Label label;
         std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> attachment;
     };
+    struct Switch
+    {
+        juce::ToggleButton button;
+        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> attachment;
+    };
     template <class Spec>
     void setupKnob(Knob& knob, const Spec& spec);
     template <class Spec>
     void setupChoice(Choice& choice, const Spec& spec);
+    template <class Spec>
+    void setupSwitch(Switch& control, const Spec& spec);
     void placeKnob(Knob& knob, juce::Rectangle<int> area);
-    void placeChoice(Choice& choice, juce::Rectangle<int> area);
+    // label in the first row, combo box in the second
+    void placeChoice(Choice& choice, juce::Rectangle<int>& area);
+    // Lanczos sigma only acts on the wavetable model
+    void updateLanczosSigmaEnabled();
+    float scaleFactor() const;
 
 	VerySimpleSynthAudioProcessor& m_processor;
     juce::AudioProcessorValueTreeState& m_apvts;
@@ -235,6 +279,7 @@ private:
 
     Choice m_model;
     Choice m_waveform;
+    Switch m_lanczosSigma;
     Knob m_octave;
     Knob m_fineTune;
     Knob m_attack;
@@ -242,4 +287,6 @@ private:
     Knob m_sustain;
     Knob m_release;
     Knob m_level;
+
+    Oscilloscope m_oscilloscope;
 };

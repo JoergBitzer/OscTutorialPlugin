@@ -6,8 +6,13 @@ VerySimpleSynth: a monophonic synth for teaching (one oscillator in three models
 and ideas: `planning.md` (keep it up to date).
 - `VerySimpleSynth.h/.cpp`: the parameters (structs), the synth (`VerySimpleSynthAudio`: MIDI, note stack,
   fixed-size blocks via `SynchronBlockProcessor`) and the GUI (`VerySimpleSynthGUI`).
-- `Oscillators.h/.cpp`: the three oscillator models (naive, wavetable, polyBLEP/BLAMP); `SimpleEnvelope.h/.cpp`:
-  linear ADSR. No GUI code in these files.
+- `oscillators/`: the oscillator models, one file each (`Oscillator.h`: base class, naive model, shared helpers;
+  wavetable with Lanczos sigma, polyBLEP 2/4-point, minBLEP, BLIT, DPW, oversampling). The order of
+  `vss::OscillatorModel` must match `g_paramModel`; append new models at the end (presets store the index).
+  `SimpleEnvelope.h/.cpp`: linear ADSR; `ScopeCapture.h/.cpp`: recording for the oscilloscope (audio thread never
+  waits). No GUI code in these files. `Oscilloscope.h/.cpp`: the display (GUI).
+- `tools/analysis/measure_models.py <Tester> [notes]`: aliasing / overshoot / phase of all models; run it after
+  changes to an oscillator and compare with the tables in `planning.md`.
 - `res/presets/*.xml`: factory presets (raise `presetversion` when one changes).
 - `PluginProcessor.*`, `PluginEditor.*`: glue code (presets, state, window, preset bar); change rarely.
 - `PluginSettings.h`: block size, GUI size, preset-bar and keyboard layout.

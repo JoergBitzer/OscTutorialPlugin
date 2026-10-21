@@ -2,8 +2,9 @@
 \hline
 Control & Range & Default & Description \\
 \hline
-Model & Naive - PolyBLEP & Naive & How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), Wavetable (band-limited tables, one per octave), PolyBLEP (naive waveform with polynomial corrections at jumps and corners). \\
+Model & Naive - Oversampling 8x & Naive & How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), Wavetable (band-limited tables, one per octave), PolyBLEP and PolyBLEP 4-point (naive waveform with polynomial corrections at jumps and corners), minBLEP (minimum-phase corrections from a table), BLIT (integrated band-limited impulse trains), DPW (differentiated antiderivative), Oversampling 8x (naive at 8 fs, filtered). \\
 Waveform & Sine - Sawtooth & Sawtooth & The waveform of the oscillator (Rectangle: 50 \% duty cycle). \\
+Lanczos sigma & Off - On & Off & Wavetable only: weights the harmonics with Lanczos sigma factors, which reduces the overshoot at jumps (Gibbs phenomenon) from 9 \% to about 1 \%. \\
 Octave & -3 - 3 & 0 & Shifts the pitch by whole octaves. \\
 Fine tune & -100 cent - 100 cent & 0 cent & Fine tuning in cent (100 cent = 1 semitone). \\
 Attack & 1 ms - 5000 ms & 10 ms & Time to rise to full level after a key is pressed. \\

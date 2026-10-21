@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VerySimpleSynthVTS presetname="Lanczos Demo" category="Unknown" bank="Factory" presetversion="2">
+  <PARAM id="Model" value="1.0"/>
+  <PARAM id="Waveform" value="2.0"/>
+  <PARAM id="LanczosSigma" value="1.0"/>
+  <PARAM id="Octave" value="1.0"/>
+  <PARAM id="FineTune" value="0.0"/>
+  <PARAM id="Attack" value="5.0"/>
+  <PARAM id="Decay" value="300.0"/>
+  <PARAM id="Sustain" value="100.0"/>
+  <PARAM id="Release" value="300.0"/>
+  <PARAM id="Level" value="-12.0"/>
+</VerySimpleSynthVTS>
