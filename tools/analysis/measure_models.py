@@ -20,7 +20,7 @@ import numpy as np
 
 SAMPLE_RATE = 48000
 SECONDS = 1.5
-MODELS = ["Naive", "Wavetable", "PolyBLEP", "PolyBLEP 4-point", "minBLEP", "BLIT", "DPW", "Oversampling 8x"]
+MODELS = ["Naive", "Wavetable", "Wavetable + Lanczos", "PolyBLEP", "PolyBLEP 4-point", "minBLEP", "BLIT", "DPW", "Oversampling 8x"]
 WAVEFORMS = ["Sine", "Triangle", "Rectangle", "Sawtooth"]
 WAVETABLE = 1
 HARMONIC_HALF_WIDTH_BINS = 4

@@ -33,24 +33,16 @@ const struct
 {
 	const std::string ID = "Model";
 	const std::string name = "Model";
-	const std::vector<std::string> choices = { "Naive", "Wavetable", "PolyBLEP", "PolyBLEP 4-point", "minBLEP",
-	                                           "BLIT", "DPW", "Oversampling 8x" };
+	const std::vector<std::string> choices = { "Naive", "Wavetable", "Wavetable + Lanczos", "PolyBLEP",
+	                                           "PolyBLEP 4-point", "minBLEP", "BLIT", "DPW", "Oversampling 8x" };
 	const int defaultIndex = 0;
 	const std::string help = "How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), "
-	                         "Wavetable (band-limited tables, one per octave), PolyBLEP and PolyBLEP 4-point (naive "
+	                         "Wavetable (band-limited tables, one per octave), Wavetable + Lanczos (harmonics weighted "
+	                         "with Lanczos sigma factors: less overshoot at jumps), PolyBLEP and PolyBLEP 4-point (naive "
 	                         "waveform with polynomial corrections at jumps and corners), minBLEP (minimum-phase "
 	                         "corrections from a table), BLIT (integrated band-limited impulse trains), DPW "
 	                         "(differentiated antiderivative), Oversampling 8x (naive at 8 fs, filtered).";
 }g_paramModel;
-
-const struct
-{
-	const std::string ID = "LanczosSigma";
-	const std::string name = "Lanczos sigma";
-	const bool defaultIsOn = false;
-	const std::string help = "Wavetable only: weights the harmonics with Lanczos sigma factors, which reduces "
-	                         "the overshoot at jumps (Gibbs phenomenon) from 9 % to about 1 %.";
-}g_paramLanczosSigma;
 
 const struct
 {
@@ -193,7 +185,6 @@ private:
     // parameters (read once per synchronous block)
     std::atomic<float>* m_model = nullptr;
     std::atomic<float>* m_waveform = nullptr;
-    std::atomic<float>* m_lanczosSigma = nullptr;
     std::atomic<float>* m_octave = nullptr;
     std::atomic<float>* m_fineTune = nullptr;
     std::atomic<float>* m_attack = nullptr;
@@ -204,7 +195,8 @@ private:
 
     // all oscillator models; m_activeOscillator points to the chosen one
     vss::NaiveOscillator m_naiveOscillator;
-    vss::WavetableOscillator m_wavetableOscillator;
+    vss::WavetableOscillator m_wavetableOscillator { false };
+    vss::WavetableOscillator m_wavetableLanczosOscillator { true };
     vss::PolyBlepOscillator m_polyBlepOscillator { vss::PolyBlepOscillator::Order::TwoPoint };
     vss::PolyBlepOscillator m_polyBlep4Oscillator { vss::PolyBlepOscillator::Order::FourPoint };
     vss::MinBlepOscillator m_minBlepOscillator;
@@ -252,22 +244,13 @@ private:
         juce::Label label;
         std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> attachment;
     };
-    struct Switch
-    {
-        juce::ToggleButton button;
-        std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> attachment;
-    };
     template <class Spec>
     void setupKnob(Knob& knob, const Spec& spec);
     template <class Spec>
     void setupChoice(Choice& choice, const Spec& spec);
-    template <class Spec>
-    void setupSwitch(Switch& control, const Spec& spec);
     void placeKnob(Knob& knob, juce::Rectangle<int> area);
     // label in the first row, combo box in the second
     void placeChoice(Choice& choice, juce::Rectangle<int>& area);
-    // Lanczos sigma only acts on the wavetable model
-    void updateLanczosSigmaEnabled();
     float scaleFactor() const;
 
 	VerySimpleSynthAudioProcessor& m_processor;
@@ -279,7 +262,6 @@ private:
 
     Choice m_model;
     Choice m_waveform;
-    Switch m_lanczosSigma;
     Knob m_octave;
     Knob m_fineTune;
     Knob m_attack;

@@ -3,6 +3,11 @@
 
 namespace vss
 {
+WavetableOscillator::WavetableOscillator(bool withLanczosSigma)
+: m_withLanczosSigma(withLanczosSigma)
+{
+}
+
 void WavetableOscillator::prepare(double sampleRate)
 {
     Oscillator::prepare(sampleRate);
@@ -32,19 +37,9 @@ void WavetableOscillator::setFrequency(double frequencyHz)
     }
 }
 
-void WavetableOscillator::setLanczosSigma(bool isOn)
-{
-    m_sigmaIndex = 0;
-    if (isOn)
-    {
-        m_sigmaIndex = 1;
-    }
-}
-
 float WavetableOscillator::processSample()
 {
-    const auto& table = m_tables[static_cast<size_t>(m_sigmaIndex)][static_cast<size_t>(m_waveform)]
-                                [static_cast<size_t>(m_tableIndex)];
+    const auto& table = m_tables[static_cast<size_t>(m_waveform)][static_cast<size_t>(m_tableIndex)];
     if (table.empty())
     {
         return 0.0f; // prepare() was not called yet
@@ -70,34 +65,30 @@ void WavetableOscillator::buildTables()
     }
 
     const double nyquist = 0.5 * m_sampleRate;
-    for (int sigma = 0; sigma < kNumSigmaVariants; ++sigma)
+    for (int wave = 0; wave < kNumWaveforms; ++wave)
     {
-        const bool withLanczosSigma = sigma == 1;
-        for (int wave = 0; wave < kNumWaveforms; ++wave)
+        double topFrequency = kTopFrequencyOfFirstTable;
+        for (int octave = 0; octave < kNumTables; ++octave)
         {
-            double topFrequency = kTopFrequencyOfFirstTable;
-            for (int octave = 0; octave < kNumTables; ++octave)
+            // all harmonics of the highest fundamental of this octave must lie below fs/2
+            int numHarmonics = static_cast<int>(nyquist / topFrequency);
+            if (numHarmonics > kMaxHarmonics)
             {
-                // all harmonics of the highest fundamental of this octave must lie below fs/2
-                int numHarmonics = static_cast<int>(nyquist / topFrequency);
-                if (numHarmonics > kMaxHarmonics)
-                {
-                    numHarmonics = kMaxHarmonics;
-                }
-                if (numHarmonics < 1)
-                {
-                    numHarmonics = 1;
-                }
-                fillTable(m_tables[static_cast<size_t>(sigma)][static_cast<size_t>(wave)][static_cast<size_t>(octave)],
-                          static_cast<Waveform>(wave), numHarmonics, withLanczosSigma, sineTable);
-                topFrequency *= 2.0;
+                numHarmonics = kMaxHarmonics;
             }
+            if (numHarmonics < 1)
+            {
+                numHarmonics = 1;
+            }
+            fillTable(m_tables[static_cast<size_t>(wave)][static_cast<size_t>(octave)], static_cast<Waveform>(wave),
+                      numHarmonics, sineTable);
+            topFrequency *= 2.0;
         }
     }
 }
 
 void WavetableOscillator::fillTable(std::vector<float>& table, Waveform waveform, int numHarmonics,
-                                    bool withLanczosSigma, const std::vector<double>& sineTable)
+                                    const std::vector<double>& sineTable)
 {
     std::vector<double> sum(static_cast<size_t>(kTableSize), 0.0);
     for (int k = 1; k <= numHarmonics; ++k)
@@ -108,7 +99,7 @@ void WavetableOscillator::fillTable(std::vector<float>& table, Waveform waveform
         {
             continue;
         }
-        if (withLanczosSigma)
+        if (m_withLanczosSigma)
         {
             amplitude *= lanczosSigma(k, numHarmonics);
         }

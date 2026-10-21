@@ -1,21 +1,23 @@
 # VerySimpleSynth -- planning
 
-Status: version 0.2.0 (oscilloscope, 8 oscillator models, Lanczos sigma) done, 2026-10-21.
+Status: version 0.2.1 (oscilloscope, 9 oscillator models) done, 2026-10-21.
+0.2.1: Lanczos sigma is a model of its own ("Wavetable + Lanczos", directly below "Wavetable") instead of a switch.
 Version 0.1.0: the first synth with 3 models (sections marked 0.1.0 keep their results).
 
 ## Goal
 A very simple synthesizer for teaching: one oscillator, one ADSR envelope, MIDI input, presets and the
 on-screen MIDI keyboard of the AdvancedAudioTemplate (branch AAT2). The main teaching point is the
-**oscillator model**: the same waveform can be generated in eight ways, and you can hear, see (oscilloscope)
+**oscillator model**: the same waveform can be generated in nine ways, and you can hear, see (oscilloscope)
 and measure the difference:
 
 | Model | Idea | Aliasing | What the oscilloscope shows |
 |---|---|---|---|
 | Naive | evaluate the ideal waveform at the phase of each sample | strong (all waveforms with corners or jumps) | exact ideal shape, jitter from period to period at high notes |
-| Wavetable | one period per octave, additive synthesis with only the harmonics below fs/2, linear interpolation | almost none | Gibbs ringing at jumps (+9 % of the jump); with Lanczos sigma about 1 % |
+| Wavetable | one period per octave, additive synthesis with only the harmonics below fs/2, linear interpolation | almost none | Gibbs ringing at jumps (+9 % of the jump) |
+| Wavetable + Lanczos | the same, harmonic k weighted with sinc(k/(H+1)) | almost none | overshoot about 1 % of the jump, a little duller |
 | PolyBLEP | naive + 2-point polynomial correction at jumps (BLEP) / corners (BLAMP) | strongly reduced | only the 2 samples around a jump are changed |
 | PolyBLEP 4-point | the same with a cubic B-spline, 4 samples | about 10 dB better | 4 samples changed, the top harmonics are damped more |
-| minBLEP | correction from a minimum-phase table, 32 samples, only after the jump | as good as wavetable | delay of about 2.5 samples, asymmetric overshoot (no pre-ringing) |
+| minBLEP | correction from a minimum-phase table, 32 samples, only after the jump | as good as wavetable | delay of about 3 samples, asymmetric overshoot (no pre-ringing) |
 | BLIT | leaky integration of band-limited impulse trains | as good as wavetable | ringing near fs/2, larger overshoot (discrete integrator), slight tilt (leak) |
 | DPW | difference of the antiderivative (= mean over one sample) | about 10 dB better than naive | jumps become 1-sample ramps |
 | Oversampling 8x | naive at 8 fs, FIR low-pass (512 taps), decimation | about 19 dB better than naive | Gibbs ringing (the low-pass filter) |
@@ -42,10 +44,10 @@ and measure the difference:
   against the dashed lines at +-1). It is triggered at the start of a period (phase wrap), so the display stands still
   for every model; 1 or 2 periods; the ideal waveform as a thin line and dots at the samples (only if they are at least
   4 px apart, i.e. for high notes). The view settings are not plugin parameters (not saved, not automatable).
-- 0.2.0: the model indices 0..2 stay the same (old presets and DAW projects keep their model); new models are appended.
-- 0.2.0: Lanczos sigma is an on/off parameter (`jade::makeSwitchParameter`, not `AudioParameterBool`) that only acts on the
-  wavetable model; both table sets are built in `prepareToPlay`, so switching costs nothing in the audio thread. The
-  switch is greyed out for the other models.
+- 0.2.1 (author's decision): "Wavetable + Lanczos" is a model in the list, directly below "Wavetable" (not a switch, as in
+  0.2.0). The models are ordered for teaching, not for compatibility: presets of 0.2.0 store other model numbers (factory
+  presets renumbered, presetversion 3). Two `WavetableOscillator` instances (constructor flag), each builds only its
+  own tables in `prepareToPlay`.
 - 0.2.0: one file per oscillator model in `oscillators/`, so each method can be read (and taught) on its own. Shared:
   the phase accumulator, `naiveWaveform()`, `naiveSlope()` and the list of jumps and corners per waveform
   (`getDiscontinuities()`, used by polyBLEP and minBLEP).
@@ -56,9 +58,8 @@ and measure the difference:
 ## Parameters
 | ID | Name | Range | Default |
 |---|---|---|---|
-| Model | Model | Naive, Wavetable, PolyBLEP, PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x | Naive |
+| Model | Model | Naive, Wavetable, Wavetable + Lanczos, PolyBLEP, PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x | Naive |
 | Waveform | Waveform | Sine, Triangle, Rectangle, Sawtooth | Sawtooth |
-| LanczosSigma | Lanczos sigma | Off, On (wavetable only) | Off |
 | Octave | Octave | -3 .. +3 | 0 |
 | FineTune | Fine tune | -100 .. +100 cent | 0 |
 | Attack | Attack | 1 .. 5000 ms (log) | 10 ms |
@@ -76,7 +77,7 @@ PluginProcessor (template)  -- keyboard state merges the on-screen keyboard into
       reads parameters once per synchronous block (2 ms)
       splits the block at MIDI events, renders the parts in between
       note stack, pitch bend, velocity, level (smoothed)
-      Oscillator* m_activeOscillator --> one of 8 models                    (oscillators/*.h/.cpp)
+      Oscillator* m_activeOscillator --> one of 9 models                    (oscillators/*.h/.cpp)
       SimpleEnvelope (linear ADSR)                                          (SimpleEnvelope.h/.cpp)
       ScopeCapture: records 1-2 periods of the oscillator output            (ScopeCapture.h/.cpp)
   VerySimpleSynthGUI  -- groups Oscillator / Envelope / Output, below the Oscilloscope (Oscilloscope.h/.cpp)
@@ -121,7 +122,7 @@ discontinuity (Valimaki & Huovilainen 2007; Esqueda, Valimaki & Bilbao 2016 for 
 model 6 since 0.2.0.)
 
 ### The models of 0.2.0
-**Lanczos sigma** (wavetable): a Fourier series cut off after H harmonics overshoots at every jump by about 9 % of the
+**Wavetable + Lanczos** (Lanczos sigma factors): a Fourier series cut off after H harmonics overshoots at every jump by about 9 % of the
 jump, however large H is (Gibbs phenomenon); more harmonics only make the ringing narrower. Multiplying harmonic k by
 `sigma_k = sinc(k/(H+1)) = sin(pi k/(H+1)) / (pi k/(H+1))` is the same as averaging the cut-off series over the
 period of its highest harmonic: the overshoot drops to about 1 %, the price is a slightly duller top octave
@@ -137,6 +138,11 @@ phase with the real cepstrum (FFT 16384: log|X| -> IFFT -> fold the anticausal p
 exp -> IFFT), integrated = minBLEP. At each jump the residual is added to a ring buffer for the next 32 samples.
 Corners need the integral (minBLAMP); its tail does not return to 0 but to -2.5 samples (the delay), so the straight
 parts are delayed by the same amount (`delay * slope` term) and only the difference is taken from the table.
+"Why is minBLEP shifted downwards on the oscilloscope?" (question of the author): it is not an offset but the delay.
+The mean is 0 like that of the other models (measured at C6: sawtooth -0.0003, triangle +0.0001; wavetable +0.0001).
+Shifted back by about 3 samples, minBLEP matches the wavetable output (rms difference 0.005 for the triangle). A delayed
+rising ramp lies below the ideal one at the same moment (by slope x delay), so next to the ideal curve the rising
+parts look lower. Minimum phase means: all of the response after the jump, no pre-ringing -- the price is this delay.
 Found while testing: with the cut-off at fs/2, half of the window's transition band lies above fs/2 and aliases (the
 12th harmonic of a sawtooth at 2093 Hz came back at -35 dB); with the cut-off at 0.85 fs/2 it is gone (-85 dB).
 
@@ -171,8 +177,9 @@ a phase lead. The same method works for any non-linear process, which makes it t
 - [x] Release build installed to `~/.vst3/`
 - [x] 0.2.0: oscilloscope (1/2 periods, ideal waveform, sample points), window 880 x 660 .. 1760 x 1320
 - [x] 0.2.0: models PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x; Lanczos sigma for the wavetable
+- [x] 0.2.1: Lanczos sigma as the model "Wavetable + Lanczos" instead of a switch
 - [x] 0.2.0: 7 new factory presets (Gibbs Demo, Lanczos Demo, PolyBLEP4 Saw, minBLEP Saw, BLIT Rectangle, DPW Saw,
-      Oversampled Saw), all presets with `LanczosSigma`, presetversion 2
+      Oversampled Saw), presetversion 2 (0.2.1: renumbered models, presetversion 3)
 - [x] 0.2.0: `tools/analysis/measure_models.py`: measures aliasing, peak value and correlation of all models
 - [ ] Manual text (`docs/manual/ManualVerySimpleSynth.tex` is still the template text; only the controls list and the
       version are updated) and PDF
@@ -216,7 +223,7 @@ Readings: the band-limited methods with long kernels (wavetable, minBLEP, BLIT) 
 the short corrections (polyBLEP, DPW) improve by 10..25 dB; oversampling helps the triangle much more than the
 jumps (its harmonics fall with 1/k^2). minBLEP's low correlation is its phase (delay), not an error.
 
-- Lanczos sigma (wavetable, max value): rectangle 1.178 -> 1.024 (C3), 1.179 -> 1.024 (C5), 1.182 -> 1.023 (C7);
+- Wavetable + Lanczos (max value, compared to Wavetable; 0.2.1: same 1.179 -> 1.024 at C5): rectangle 1.178 -> 1.024 (C3), 1.179 -> 1.024 (C5), 1.182 -> 1.023 (C7);
   sawtooth 1.171 -> 1.013 (C3); fundamental unchanged (-0.01 dB, -0.14 dB at C7).
 - BLIT start (after the run-in fix): the first period has the same peak values as the steady state.
 - Builds Debug and Release without warnings. pluginval (strictness 10, 3 runs): Debug and Release all SUCCESS.
