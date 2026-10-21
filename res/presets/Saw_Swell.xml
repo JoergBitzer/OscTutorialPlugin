@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<VerySimpleSynthVTS presetname="Saw Swell" category="Unknown" bank="Factory" presetversion="1">
+<VerySimpleSynthVTS presetname="Saw Swell" category="Unknown" bank="Factory" presetversion="2">
   <PARAM id="Model" value="2.0"/>
   <PARAM id="Waveform" value="3.0"/>
+  <PARAM id="LanczosSigma" value="0.0"/>
   <PARAM id="Octave" value="0.0"/>
   <PARAM id="FineTune" value="0.0"/>
   <PARAM id="Attack" value="1500.0"/>

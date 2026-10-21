@@ -17,6 +17,8 @@
     - makeChoiceParameter(g_paramWaveform): the AudioParameterChoice (its value is the index
       of the choice; getRawParameterValue() gives the index as float)
     - choiceHelpText(g_paramWaveform): "Waveform (Sine, Triangle; default Sine): What this control does."
+    On/off parameters (a choice Off/On, see SwitchParameter.h) work the same way, with a struct
+    { ID, name, defaultIsOn, help }: makeSwitchParameter(spec), switchHelpText(spec).
     - choiceNames(g_paramWaveform): the entries, e.g. for a combo box (fill it before its
       ComboBoxAttachment is made: comboBox.addItemList(jade::choiceNames(g_paramWaveform), 1))
     License: MIT
@@ -24,6 +26,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "ParameterSpec.h"
+#include "SwitchParameter.h"
 
 namespace jade
 {
@@ -50,5 +53,23 @@ std::unique_ptr<juce::AudioParameterChoice> makeChoiceParameter(const Spec& p)
     parameterHelpTexts()[juce::String(p.ID)] = juce::String(p.help);
     return std::make_unique<juce::AudioParameterChoice>(juce::ParameterID(juce::String(p.ID), kParameterVersion),
                                                         juce::String(p.name), choiceNames(p), p.defaultIndex);
+}
+
+template <class Spec>
+juce::String switchHelpText(const Spec& p)
+{
+    juce::String defaultText("Off");
+    if (p.defaultIsOn)
+    {
+        defaultText = "On";
+    }
+    return juce::String(p.name) + " (Off, On; default " + defaultText + "): " + juce::String(p.help);
+}
+
+template <class Spec>
+std::unique_ptr<juce::AudioParameterChoice> makeSwitchParameter(const Spec& p)
+{
+    parameterHelpTexts()[juce::String(p.ID)] = juce::String(p.help);
+    return makeSwitchParameter(juce::String(p.ID), juce::String(p.name), p.defaultIsOn);
 }
 } // namespace jade

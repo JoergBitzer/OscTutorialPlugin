@@ -17,7 +17,7 @@ endif()
 
 set(TARGET_NAME VerySimpleSynth)
 
-project(${TARGET_NAME} VERSION 0.1.0)
+project(${TARGET_NAME} VERSION 0.2.0)
 
 if(NOT TARGET juce::juce_core) # JUCE not added by a parent project: use the submodule
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
@@ -90,8 +90,16 @@ target_sources(${TARGET_NAME}
         PluginEditor.cpp
         PluginProcessor.cpp
         VerySimpleSynth.cpp
-        Oscillators.cpp
         SimpleEnvelope.cpp
+        ScopeCapture.cpp
+        Oscilloscope.cpp
+        oscillators/Oscillator.cpp
+        oscillators/WavetableOscillator.cpp
+        oscillators/PolyBlepOscillator.cpp
+        oscillators/MinBlepOscillator.cpp
+        oscillators/BlitOscillator.cpp
+        oscillators/DpwOscillator.cpp
+        oscillators/OversamplingOscillator.cpp
         tools/DayNightLookAndFeel.cpp
         tools/MidiModPitchState.cpp
         tools/PresetHandler.cpp

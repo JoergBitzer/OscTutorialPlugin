@@ -11,13 +11,14 @@ constexpr int kReferenceNote = 69;            // MIDI note of A4
 constexpr double kSemitonesPerOctave = 12.0;
 constexpr double kCentPerSemitone = 100.0;
 constexpr float kPercentToFactor = 0.01f;
-constexpr float kMaxMidiVelocity = 127.0f;
 } // namespace
 
 VerySimpleSynthAudio::VerySimpleSynthAudio(VerySimpleSynthAudioProcessor* processor)
 :SynchronBlockProcessor(), m_processor(processor)
 {
     m_heldNotes.reserve(kNumMidiNotes); // no allocation in the audio thread
+    m_oscillators = { &m_naiveOscillator, &m_wavetableOscillator, &m_polyBlepOscillator, &m_polyBlep4Oscillator,
+                      &m_minBlepOscillator, &m_blitOscillator, &m_dpwOscillator, &m_oversamplingOscillator };
 }
 
 void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBlock, int max_channels)
@@ -33,9 +34,10 @@ void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBl
     prepareSynchronProcessing(max_channels,synchronblocksize);
     m_Latency = synchronblocksize; // '=', not '+=': prepareToPlay can be called several times
 
-    m_naiveOscillator.prepare(sampleRate);
-    m_wavetableOscillator.prepare(sampleRate);
-    m_polyBlepOscillator.prepare(sampleRate);
+    for (auto* oscillator : m_oscillators)
+    {
+        oscillator->prepare(sampleRate);
+    }
     m_envelope.prepare(sampleRate);
     m_heldNotes.clear();
     m_currentNote = kNoNote;
@@ -79,6 +81,7 @@ void VerySimpleSynthAudio::addParameter(std::vector<std::unique_ptr<juce::Ranged
     // one line per parameter, made from its definition in VerySimpleSynth.h (see tools/ParameterSpec.h)
     paramVector.push_back(jade::makeChoiceParameter(g_paramModel));
     paramVector.push_back(jade::makeChoiceParameter(g_paramWaveform));
+    paramVector.push_back(jade::makeSwitchParameter(g_paramLanczosSigma));
     paramVector.push_back(jade::makeParameter(g_paramOctave));
     paramVector.push_back(jade::makeParameter(g_paramFineTune));
     paramVector.push_back(jade::makeParameter(g_paramAttack));
@@ -92,6 +95,7 @@ void VerySimpleSynthAudio::prepareParameter(std::unique_ptr<juce::AudioProcessor
 {
     m_model = vts->getRawParameterValue(g_paramModel.ID);
     m_waveform = vts->getRawParameterValue(g_paramWaveform.ID);
+    m_lanczosSigma = vts->getRawParameterValue(g_paramLanczosSigma.ID);
     m_octave = vts->getRawParameterValue(g_paramOctave.ID);
     m_fineTune = vts->getRawParameterValue(g_paramFineTune.ID);
     m_attack = vts->getRawParameterValue(g_paramAttack.ID);
@@ -103,27 +107,26 @@ void VerySimpleSynthAudio::prepareParameter(std::unique_ptr<juce::AudioProcessor
 
 void VerySimpleSynthAudio::updateParameters()
 {
-    // oscillator model: the new oscillator continues with the phase of the old one (no click)
-    const auto model = static_cast<vss::OscillatorModel>(juce::roundToInt(m_model->load()));
-    if (model != m_activeModel)
-    {
-        vss::Oscillator* newOscillator = &m_naiveOscillator;
-        if (model == vss::OscillatorModel::Wavetable)
-        {
-            newOscillator = &m_wavetableOscillator;
-        }
-        else if (model == vss::OscillatorModel::PolyBlep)
-        {
-            newOscillator = &m_polyBlepOscillator;
-        }
-        newOscillator->setPhase(m_activeOscillator->getPhase());
-        m_activeOscillator = newOscillator;
-        m_activeModel = model;
-    }
-    m_activeOscillator->setWaveform(static_cast<vss::Waveform>(juce::roundToInt(m_waveform->load())));
-
+    const auto waveform = static_cast<vss::Waveform>(juce::roundToInt(m_waveform->load()));
     m_octaveShift = m_octave->load();
     m_fineTuneCent = m_fineTune->load();
+    m_wavetableOscillator.setLanczosSigma(m_lanczosSigma->load() >= 0.5f);
+
+    // oscillator model: the new oscillator gets waveform and frequency, then continues with the
+    // phase of the old one (no click; setPhase also sets its inner state to fit)
+    int modelIndex = juce::roundToInt(m_model->load());
+    modelIndex = juce::jlimit(0, static_cast<int>(m_oscillators.size()) - 1, modelIndex);
+    const auto model = static_cast<vss::OscillatorModel>(modelIndex);
+    if (model != m_activeModel)
+    {
+        const double phase = m_activeOscillator->getPhase();
+        m_activeOscillator = m_oscillators[static_cast<size_t>(modelIndex)];
+        m_activeModel = model;
+        m_activeOscillator->setWaveform(waveform);
+        updateFrequency();
+        m_activeOscillator->setPhase(phase);
+    }
+    m_activeOscillator->setWaveform(waveform);
     updateFrequency();
 
     m_envelope.setParameters(m_attack->load(), m_decay->load(), kPercentToFactor * m_sustain->load(), m_release->load());
@@ -159,9 +162,13 @@ void VerySimpleSynthAudio::noteOn(int note, float velocity)
     m_heldNotes.erase(std::remove(m_heldNotes.begin(), m_heldNotes.end(), note), m_heldNotes.end());
     m_heldNotes.push_back(note);
 
-    if (!m_envelope.isActive())
+    const bool isNewSound = !m_envelope.isActive();
+    m_currentNote = note;
+    updateFrequency();
+    if (isNewSound)
     {
         m_activeOscillator->reset(); // a new sound starts at phase 0 (reproducible)
+        m_scope.restart();
     }
     if (m_envelope.isActive())
     {
@@ -171,8 +178,6 @@ void VerySimpleSynthAudio::noteOn(int note, float velocity)
     {
         m_velocityGain.setCurrentAndTargetValue(velocity);
     }
-    m_currentNote = note;
-    updateFrequency();
     m_envelope.noteOn(); // starts from the current level: no click
 }
 
@@ -224,13 +229,16 @@ void VerySimpleSynthAudio::render(juce::AudioBuffer<float>& buffer, int startSam
             continue;
         }
         const float envelope = m_envelope.processSample();
-        out[n] = m_activeOscillator->processSample() * envelope * velocity * level;
+        const double phase = m_activeOscillator->getPhase();
+        const float oscillator = m_activeOscillator->processSample();
+        m_scope.push(oscillator, phase, m_activeOscillator->getPhaseIncrement()); // before the envelope
+        out[n] = oscillator * envelope * velocity * level;
     }
 }
 
 
 VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
-:m_processor(p) ,m_apvts(apvts)
+:m_processor(p) ,m_apvts(apvts), m_oscilloscope(p.m_algo.getScope(), apvts)
 {
     m_oscillatorGroup.setText("Oscillator");
     m_envelopeGroup.setText("Envelope");
@@ -241,6 +249,7 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
 
     setupChoice(m_model, g_paramModel);
     setupChoice(m_waveform, g_paramWaveform);
+    setupSwitch(m_lanczosSigma, g_paramLanczosSigma);
     setupKnob(m_octave, g_paramOctave);
     setupKnob(m_fineTune, g_paramFineTune);
     setupKnob(m_attack, g_paramAttack);
@@ -248,6 +257,11 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
     setupKnob(m_sustain, g_paramSustain);
     setupKnob(m_release, g_paramRelease);
     setupKnob(m_level, g_paramLevel);
+
+    m_model.comboBox.onChange = [this]() { updateLanczosSigmaEnabled(); };
+    updateLanczosSigmaEnabled();
+
+    addAndMakeVisible(m_oscilloscope);
 }
 
 template <class Spec>
@@ -272,9 +286,29 @@ void VerySimpleSynthGUI::setupChoice(Choice& choice, const Spec& spec)
     choice.comboBox.setTooltip(jade::choiceHelpText(spec));
     choice.attachment = std::make_unique<juce::AudioProcessorValueTreeState::ComboBoxAttachment>(m_apvts, spec.ID, choice.comboBox);
     choice.label.setText(spec.name, juce::dontSendNotification);
-    choice.label.setJustificationType(juce::Justification::centredLeft);
+    choice.label.setJustificationType(juce::Justification::bottomLeft);
     addAndMakeVisible(choice.comboBox);
     addAndMakeVisible(choice.label);
+}
+
+template <class Spec>
+void VerySimpleSynthGUI::setupSwitch(Switch& control, const Spec& spec)
+{
+    control.button.setButtonText(spec.name);
+    control.button.setTooltip(jade::switchHelpText(spec));
+    control.attachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(m_apvts, spec.ID, control.button);
+    addAndMakeVisible(control.button);
+}
+
+void VerySimpleSynthGUI::updateLanczosSigmaEnabled()
+{
+    const int wavetableId = static_cast<int>(vss::OscillatorModel::Wavetable) + 1; // combo box ids start at 1
+    m_lanczosSigma.button.setEnabled(m_model.comboBox.getSelectedId() == wavetableId);
+}
+
+float VerySimpleSynthGUI::scaleFactor() const
+{
+    return static_cast<float>(getWidth()) / g_minGuiSize_x;
 }
 
 void VerySimpleSynthGUI::paint(juce::Graphics &g)
@@ -284,84 +318,83 @@ void VerySimpleSynthGUI::paint(juce::Graphics &g)
     // Take colours from the LookAndFeel (findColour), not fixed ones like juce::Colour(0xffffffff):
     // then your GUI follows the day/night theme (WITH_DAYNIGHT) and any other LookAndFeel.
     g.setColour (getLookAndFeel().findColour (juce::Label::textColourId));
-    const float scaleFactor = static_cast<float>(getWidth()) / g_minGuiSize_x;
-    g.setFont (g_versionFontSize * scaleFactor);
-
+    const float scale = scaleFactor();
+    g.setFont (g_versionFontSize * scale);
+    
     juce::String text2display = "VerySimpleSynth V " + juce::String(PLUGIN_VERSION_MAJOR) + "." + juce::String(PLUGIN_VERSION_MINOR) + "." + juce::String(PLUGIN_VERSION_PATCH);
-    // in the strip below the groups (see resized())
-    auto versionArea = getLocalBounds().removeFromBottom(static_cast<int>(g_versionHeight * scaleFactor));
-    versionArea.removeFromRight(static_cast<int>(g_guiMargin * scaleFactor));
+    // in the strip below the oscilloscope (see resized())
+    auto versionArea = getLocalBounds().removeFromBottom(static_cast<int>(g_versionHeight * scale));
+    versionArea.removeFromRight(static_cast<int>(g_guiMargin * scale));
     g.drawFittedText (text2display, versionArea, juce::Justification::centredRight, 1);
-
 }
 
 void VerySimpleSynthGUI::placeKnob(Knob& knob, juce::Rectangle<int> area)
 {
-    const float scaleFactor = static_cast<float>(getWidth()) / g_minGuiSize_x;
-    const int labelHeight = static_cast<int>(g_labelHeight * scaleFactor);
-    const int textBoxHeight = static_cast<int>(g_labelHeight * scaleFactor);
-    knob.label.setFont(juce::FontOptions(g_labelFontSize * scaleFactor));
+    const float scale = scaleFactor();
+    const int labelHeight = static_cast<int>(g_labelHeight * scale);
+    knob.label.setFont(juce::FontOptions(g_labelFontSize * scale));
     knob.label.setBounds(area.removeFromTop(labelHeight));
-    knob.slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, area.getWidth(), textBoxHeight);
+    knob.slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, area.getWidth(), labelHeight);
     knob.slider.setBounds(area);
 }
 
-void VerySimpleSynthGUI::placeChoice(Choice& choice, juce::Rectangle<int> area)
+void VerySimpleSynthGUI::placeChoice(Choice& choice, juce::Rectangle<int>& area)
 {
-    const float scaleFactor = static_cast<float>(getWidth()) / g_minGuiSize_x;
-    choice.label.setFont(juce::FontOptions(g_labelFontSize * scaleFactor));
-    choice.label.setBounds(area.removeFromLeft(static_cast<int>(g_choiceLabelWidth * scaleFactor)));
-    choice.comboBox.setBounds(area);
+    const float scale = scaleFactor();
+    choice.label.setFont(juce::FontOptions(g_labelFontSize * scale));
+    choice.label.setBounds(area.removeFromTop(static_cast<int>(g_labelHeight * scale)));
+    choice.comboBox.setBounds(area.removeFromTop(static_cast<int>(g_choiceHeight * scale)));
 }
 
 void VerySimpleSynthGUI::resized()
 {
 	auto r = getLocalBounds();
-    const float scaleFactor = static_cast<float>(getWidth()) / g_minGuiSize_x;
-    const int margin = static_cast<int>(g_guiMargin * scaleFactor);
-    const int groupTitleHeight = static_cast<int>(g_groupTitleHeight * scaleFactor);
-    const int choiceHeight = static_cast<int>(g_choiceHeight * scaleFactor);
-    r.removeFromBottom(static_cast<int>(g_versionHeight * scaleFactor)); // version text, see paint()
+    const float scale = scaleFactor();
+    const int margin = static_cast<int>(g_guiMargin * scale);
+    const int groupTitleHeight = static_cast<int>(g_groupTitleHeight * scale);
+    r.removeFromBottom(static_cast<int>(g_versionHeight * scale)); // version text, see paint()
     r.removeFromTop(margin);
     r.reduce(margin, 0); // at the bottom the version strip is margin enough
 
-    // three groups side by side: oscillator (2 knob columns), envelope (4), output (1)
-    constexpr int kOscillatorColumns = 2;
+    // top: the controls; below: the oscilloscope
+    auto controls = r.removeFromTop(static_cast<int>(g_controlsHeight * scale));
+    r.removeFromTop(margin);
+    m_oscilloscope.setBounds(r);
+
+    // three groups side by side: oscillator (2 columns of choices, 2 knobs), envelope (4 knobs), output (1 knob)
+    constexpr int kOscillatorColumns = 4;
     constexpr int kEnvelopeColumns = 4;
     constexpr int kOutputColumns = 1;
     constexpr int kAllColumns = kOscillatorColumns + kEnvelopeColumns + kOutputColumns;
-    const int columnWidth = (r.getWidth() - 2 * margin) / kAllColumns;
+    const int columnWidth = (controls.getWidth() - 2 * margin) / kAllColumns;
 
-    auto oscillatorArea = r.removeFromLeft(kOscillatorColumns * columnWidth);
-    r.removeFromLeft(margin);
-    auto envelopeArea = r.removeFromLeft(kEnvelopeColumns * columnWidth);
-    r.removeFromLeft(margin);
-    auto outputArea = r.removeFromLeft(kOutputColumns * columnWidth);
+    auto oscillatorArea = controls.removeFromLeft(kOscillatorColumns * columnWidth);
+    controls.removeFromLeft(margin);
+    auto envelopeArea = controls.removeFromLeft(kEnvelopeColumns * columnWidth);
+    controls.removeFromLeft(margin);
+    auto outputArea = controls;
 
     m_oscillatorGroup.setBounds(oscillatorArea);
     m_envelopeGroup.setBounds(envelopeArea);
     m_outputGroup.setBounds(outputArea);
 
     // inside the groups: below the title, a small margin on all sides
-    oscillatorArea.removeFromTop(groupTitleHeight);
-    oscillatorArea.reduce(margin, margin);
-    envelopeArea.removeFromTop(groupTitleHeight);
-    envelopeArea.reduce(margin, margin);
-    outputArea.removeFromTop(groupTitleHeight);
-    outputArea.reduce(margin, margin);
+    for (auto* area : { &oscillatorArea, &envelopeArea, &outputArea })
+    {
+        area->removeFromTop(groupTitleHeight);
+        area->reduce(margin, margin);
+    }
 
-    placeChoice(m_model, oscillatorArea.removeFromTop(choiceHeight));
-    oscillatorArea.removeFromTop(margin);
-    placeChoice(m_waveform, oscillatorArea.removeFromTop(choiceHeight));
-    oscillatorArea.removeFromTop(margin);
-    const int oscillatorKnobWidth = oscillatorArea.getWidth() / kOscillatorColumns;
+    // oscillator: model, waveform and Lanczos sigma on the left, the two knobs on the right
+    auto choices = oscillatorArea.removeFromLeft(oscillatorArea.getWidth() / 2);
+    choices.removeFromRight(margin);
+    placeChoice(m_model, choices);
+    placeChoice(m_waveform, choices);
+    choices.removeFromTop(margin);
+    m_lanczosSigma.button.setBounds(choices.removeFromTop(static_cast<int>(g_choiceHeight * scale)));
+    const int oscillatorKnobWidth = oscillatorArea.getWidth() / 2;
     placeKnob(m_octave, oscillatorArea.removeFromLeft(oscillatorKnobWidth));
     placeKnob(m_fineTune, oscillatorArea);
-
-    // all knobs in one row: the same space above them as the two combo boxes need
-    const int spaceAboveKnobs = 2 * (choiceHeight + margin);
-    envelopeArea.removeFromTop(spaceAboveKnobs);
-    outputArea.removeFromTop(spaceAboveKnobs);
 
     const int envelopeKnobWidth = envelopeArea.getWidth() / kEnvelopeColumns;
     placeKnob(m_attack, envelopeArea.removeFromLeft(envelopeKnobWidth));
