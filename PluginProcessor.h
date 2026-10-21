@@ -22,6 +22,9 @@ public:
 
     void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
     using AudioProcessor::processBlock;
+    // bypassed synth: silence (needed, because the plugin reports a latency, see processBlockBypassed in JUCE)
+    void processBlockBypassed (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+    using AudioProcessor::processBlockBypassed;
 
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;

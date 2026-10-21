@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VerySimpleSynthVTS presetname="Soft Sine Pad" category="Unknown" bank="Factory" presetversion="1">
+  <PARAM id="Model" value="1.0"/>
+  <PARAM id="Waveform" value="0.0"/>
+  <PARAM id="Octave" value="0.0"/>
+  <PARAM id="FineTune" value="0.0"/>
+  <PARAM id="Attack" value="800.0"/>
+  <PARAM id="Decay" value="1000.0"/>
+  <PARAM id="Sustain" value="80.0"/>
+  <PARAM id="Release" value="1500.0"/>
+  <PARAM id="Level" value="-9.0"/>
+</VerySimpleSynthVTS>

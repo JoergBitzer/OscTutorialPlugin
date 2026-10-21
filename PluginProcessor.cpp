@@ -119,6 +119,7 @@ void VerySimpleSynthAudioProcessor::prepareToPlay (double sampleRate, int sample
     juce::ignoreUnused (samplesPerBlock);
     m_fs = static_cast<float>(sampleRate);
     m_algo.prepareToPlay(sampleRate,samplesPerBlock,nrofchannels);
+    setLatencySamples(m_algo.getLatency()); // known only now (the synchronous block size depends on the sample rate)
 }
 
 void VerySimpleSynthAudioProcessor::releaseResources()
@@ -185,6 +186,15 @@ void VerySimpleSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
     midiMessages.clear(); // except you want to create new midi messages, but than say so 
     // by setting NEEDS_MIDI_OUTPUT in CMakeLists.txt
 #endif
+}
+
+void VerySimpleSynthAudioProcessor::processBlockBypassed (juce::AudioBuffer<float>& buffer,
+                                                          juce::MidiBuffer& midiMessages)
+{
+    // JUCE's default asserts if the plugin reports a latency (an effect would have to delay its input
+    // by the same amount). A bypassed synth simply makes no sound.
+    juce::ignoreUnused (midiMessages);
+    buffer.clear();
 }
 
 //==============================================================================

@@ -2,6 +2,14 @@
 \hline
 Control & Range & Default & Description \\
 \hline
-Example & 1.0 xyz - 2.0 xyz & 1.2 xyz & An example parameter; replace it with your own. \\
+Model & Naive - PolyBLEP & Naive & How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), Wavetable (band-limited tables, one per octave), PolyBLEP (naive waveform with polynomial corrections at jumps and corners). \\
+Waveform & Sine - Sawtooth & Sawtooth & The waveform of the oscillator (Rectangle: 50 \% duty cycle). \\
+Octave & -3 - 3 & 0 & Shifts the pitch by whole octaves. \\
+Fine tune & -100 cent - 100 cent & 0 cent & Fine tuning in cent (100 cent = 1 semitone). \\
+Attack & 1 ms - 5000 ms & 10 ms & Time to rise to full level after a key is pressed. \\
+Decay & 1 ms - 5000 ms & 300 ms & Time to fall from full level to the sustain level. \\
+Sustain & 0 \% - 100 \% & 70 \% & Level while the key is held (in \% of full level). \\
+Release & 1 ms - 5000 ms & 300 ms & Time to fall to silence after the key is released. \\
+Level & -60.0 dB - 0.0 dB & -12.0 dB & Output level (at velocity 127). \\
 \hline
 \end{tabular}

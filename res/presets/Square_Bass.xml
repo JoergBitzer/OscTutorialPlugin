@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VerySimpleSynthVTS presetname="Square Bass" category="Unknown" bank="Factory" presetversion="1">
+  <PARAM id="Model" value="2.0"/>
+  <PARAM id="Waveform" value="2.0"/>
+  <PARAM id="Octave" value="-1.0"/>
+  <PARAM id="FineTune" value="0.0"/>
+  <PARAM id="Attack" value="2.0"/>
+  <PARAM id="Decay" value="250.0"/>
+  <PARAM id="Sustain" value="40.0"/>
+  <PARAM id="Release" value="80.0"/>
+  <PARAM id="Level" value="-12.0"/>
+</VerySimpleSynthVTS>

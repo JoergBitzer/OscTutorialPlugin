@@ -1,16 +1,24 @@
-# CLAUDE.md -- instructions for Claude Code in a plugin made from the AdvancedAudioTemplate (AAT2)
+# CLAUDE.md -- instructions for Claude Code in VerySimpleSynth (made from the AdvancedAudioTemplate, AAT2)
 
 ## The project
-A JUCE audio plugin (VST3, AU on macOS, Standalone) made from the AdvancedAudioTemplate, branch AAT2.
-- `VerySimpleSynth.h/.cpp`: the parameters (structs), the algorithm (`VerySimpleSynthAudio`, fixed-size
-  blocks via `SynchronBlockProcessor`) and the GUI (`VerySimpleSynthGUI`). Most work happens here.
+VerySimpleSynth: a monophonic synth for teaching (one oscillator in three models, ADSR), a JUCE plugin
+(VST3, AU on macOS, Standalone) made from the AdvancedAudioTemplate, branch AAT2. Plan, decisions, status
+and ideas: `planning.md` (keep it up to date).
+- `VerySimpleSynth.h/.cpp`: the parameters (structs), the synth (`VerySimpleSynthAudio`: MIDI, note stack,
+  fixed-size blocks via `SynchronBlockProcessor`) and the GUI (`VerySimpleSynthGUI`).
+- `Oscillators.h/.cpp`: the three oscillator models (naive, wavetable, polyBLEP/BLAMP); `SimpleEnvelope.h/.cpp`:
+  linear ADSR. No GUI code in these files.
+- `res/presets/*.xml`: factory presets (raise `presetversion` when one changes).
 - `PluginProcessor.*`, `PluginEditor.*`: glue code (presets, state, window, preset bar); change rarely.
 - `PluginSettings.h`: block size, GUI size, preset-bar and keyboard layout.
-- `tools/`: template helpers -- `ParameterSpec.h`, `DayNightLookAndFeel.*`, `PresetHandler.*`,
+- `tools/`: template helpers -- `ParameterSpec.h`, `ChoiceParameterSpec.h` (combo boxes, new here), `DayNightLookAndFeel.*`, `PresetHandler.*`,
   `LogFrequencyRange.h`, `run_pluginval.*`, `tester/`.
 - `CMakeLists.txt`: version, plugin codes, switches `WITH_PRESETHANDLERGUI`, `WITH_DAYNIGHT` (needs the
   preset handler), `WITH_MIDIKEYBOARD`, source list.
-- Docs: `README.md`, `HowToTestYourPlugin.md`, `docs/HowToDoc.md`, manual in `docs/manual/`.
+- Docs: `README.md`, `planning.md`, `HowToTestYourPlugin.md`, `docs/HowToDoc.md`, manual in `docs/manual/`,
+  the template's README in `docs/AAT2_README.md`.
+- Test a synth with the Tester: `--note <n> [--velocity <v>] [--hold <s>]` plays a MIDI note (render needs an
+  input wav only for the length and the sample rate, e.g. silence).
 
 ## Build
 ```console

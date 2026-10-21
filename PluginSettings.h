@@ -6,9 +6,9 @@ const bool g_forcePowerOf2(false); // should be true for FFT Processing
 
 // -------------- GUI -----------------
 // global GUI setting for VerySimpleSynth
-const int g_minGuiSize_x(400);
-const int g_maxGuiSize_x(1200);
-const int g_minGuiSize_y(200);
+const int g_minGuiSize_x(640);
+const int g_maxGuiSize_x(1600);
+const int g_minGuiSize_y(400);
 const float g_guiratio = float(g_minGuiSize_y)/g_minGuiSize_x;
 
 // ---------- presethandler ----------
@@ -28,4 +28,13 @@ const float g_wheelstokeyboardratio(0.1f);
 const int g_octaveOfMiddleC(4); // MIDI note 60 is called C4 on the keyboard (JUCE's default labels it C3; set 3 for that)
 
 // -------Your defines for GUI --------
+// all sizes in pixels at the smallest window size (g_minGuiSize_x), they scale with the window
+const int g_guiMargin(6);
+const int g_groupTitleHeight(14);
+const int g_choiceHeight(22);
+const int g_choiceLabelWidth(62);
+const int g_labelHeight(18);
+const float g_labelFontSize(14.0f);
+const float g_versionFontSize(11.0f);
+const int g_versionHeight(14);
 
