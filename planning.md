@@ -1,6 +1,7 @@
 # VerySimpleSynth -- planning
 
-Status: version 0.3.1 (oscilloscope and spectrum, 9 oscillator models) done, 2026-10-21.
+Status: version 1.0.0, the first public release (GitHub release for Windows, macOS, Linux), 2026-10-21.
+1.0.0: manual/tutorial (docs/manual, PDF in every release zip), CI fixed for Linux, two oscillator fixes (see below).
 0.3.1: the preset "Init" always holds the default values (fix from the template, AAT2 0.0.4).
 0.3.0: spectrum on a second page of the big view (buttons Oscilloscope | Spectrum).
 0.2.1: Lanczos sigma is a model of its own ("Wavetable + Lanczos", directly below "Wavetable") instead of a switch.
@@ -194,15 +195,22 @@ a phase lead. The same method works for any non-linear process, which makes it t
 - [x] 0.2.0: oscilloscope (1/2 periods, ideal waveform, sample points), window 880 x 660 .. 1760 x 1320
 - [x] 0.2.0: models PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x; Lanczos sigma for the wavetable
 - [x] 0.2.1: Lanczos sigma as the model "Wavetable + Lanczos" instead of a switch
+- [x] 1.0.0: manual as a tutorial (11 pages: aliasing, each model with oscilloscope + spectrum, pros/cons,
+      comparison table with aliasing and computing cost, Gibbs/Lanczos, exercises, references); figures made
+      with the Tester (`docs/manual/images/`)
+- [x] 1.0.0: CI: Linux pluginval in its own job on ubuntu-24.04 (pluginval 2.0.0-beta3 needs glibc 2.38, the
+      Linux build stays on ubuntu-22.04 for older distributions); first CI run on Windows and macOS: build,
+      pluginval and auval passed without changes
+- [x] 1.0.0: BLIT triangle: own leak 5 Hz (with 1 Hz the second integrator amplified the DC error of the first by
+      about 1300: -53 dB and max 2.47 at C7 instead of -92 dB / 1.0); Wavetable + Lanczos: no sigma factors for
+      the sine (it is not a cut-off series; at C8 it had only 0.94)
 - [x] 0.3.1: "Init" = default values (PresetHandler from the template, AAT2 0.0.4)
 - [x] 0.3.0: spectrum page (FFT, harmonic marks, live "outside the harmonics"); Tester option `--click <button text>`
 - [x] 0.2.0: 7 new factory presets (Gibbs Demo, Lanczos Demo, PolyBLEP4 Saw, minBLEP Saw, BLIT Rectangle, DPW Saw,
       Oversampled Saw), presetversion 2 (0.2.1: renumbered models, presetversion 3)
 - [x] 0.2.0: `tools/analysis/measure_models.py`: measures aliasing, peak value and correlation of all models
-- [ ] Manual text (`docs/manual/ManualVerySimpleSynth.tex` is still the template text; only the controls list and the
-      version are updated) and PDF
 - [ ] Tried in a DAW (only possible for the author)
-- [ ] Not tested: Windows, macOS (CI would build them on a release tag)
+- [ ] Windows and macOS: built and tested by CI (pluginval, auval), not tried by a person
 
 ## Test plan
 1. Build Debug without warnings.
@@ -213,6 +221,15 @@ a phase lead. The same method works for any non-linear process, which makes it t
 4. Envelope: note on/off, check that the output decays to 0 after the release time.
 5. pluginval strictness 10 (Debug and Release), 3 runs each, no assertions.
 6. GUI snapshot in both themes (virtual display).
+
+## Test results 1.0.0 (2026-10-21)
+- `measure_models.py 60 96 108` with all 9 models: see the comparison table in the manual (section 5.11);
+  Wavetable + Lanczos sawtooth C7 -88.4 dB, max of the rectangle 1.02; BLIT triangle C7 -92.2 dB, max 1.01.
+- Computing time per sample (sawtooth C7, gcc -O2, oscillator files alone, desktop PC): Wavetable 3.7 ns,
+  Naive 5.6, PolyBLEP 11.6, PolyBLEP 4-point 13.5, minBLEP 19.4, DPW 20.0, BLIT 110, Oversampling 8x 396
+  (1 % of one core at 48 kHz = 208 ns).
+- CI (workflow_dispatch, no tag): Windows and macOS builds, pluginval, auval OK in the first run; Linux build OK,
+  Linux pluginval failed (glibc, see above) -> separate job.
 
 ## Test results 0.3.0 (2026-10-21, Linux, 48 kHz)
 - Spectrum page, sawtooth at C7: the live value "outside the harmonics" shows -12.8 dB (naive), -90.1 dB (wavetable),

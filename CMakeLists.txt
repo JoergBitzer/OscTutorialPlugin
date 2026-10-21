@@ -17,7 +17,7 @@ endif()
 
 set(TARGET_NAME VerySimpleSynth)
 
-project(${TARGET_NAME} VERSION 0.3.1)
+project(${TARGET_NAME} VERSION 1.0.0)
 
 if(NOT TARGET juce::juce_core) # JUCE not added by a parent project: use the submodule
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")

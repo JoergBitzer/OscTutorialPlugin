@@ -32,7 +32,11 @@ Copy the directory VerySimpleSynth.vst3 to
 /home/yourUSERNAME/.vst3/
 
 Done! Start your DAW and let it rescan the plugins.
-The Standalone application runs without a DAW: audio input -> VerySimpleSynth -> audio output.
+The Standalone application runs without a DAW: play it with the on-screen keyboard or a MIDI keyboard
+(choose the audio and MIDI devices in its Options menu).
+
+The manual (ManualVerySimpleSynth.pdf) explains the controls and is a small tutorial about the
+oscillator models: what aliasing is and the pros and cons of each method.
 
 Have fun!
 

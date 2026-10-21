@@ -8,6 +8,10 @@ periods) or, on its second page, the spectrum.
 
 ![VerySimpleSynth](docs/images/GUI.png)
 
+**Download:** [Releases](https://github.com/JoergBitzer/VerySimpleSynth/releases) (Windows, macOS, Linux; VST3,
+AU on macOS, Standalone). The manual in every zip is also a tutorial about the oscillator models
+([docs/manual/ManualVerySimpleSynth.pdf](docs/manual/ManualVerySimpleSynth.pdf)).
+
 ## Features
 * One oscillator: waveform Sine, Triangle, Rectangle, Sawtooth; Octave (-3..+3) and Fine tune (+-100 cent)
 * Oscillator model (the teaching part):

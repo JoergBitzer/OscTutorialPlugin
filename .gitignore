@@ -33,3 +33,11 @@
 
 # build folders
 build*/
+
+# LaTeX helper files
+docs/manual/*.aux
+docs/manual/*.log
+docs/manual/*.out
+docs/manual/*.toc
+docs/manual/*.fls
+docs/manual/*.fdb_latexmk

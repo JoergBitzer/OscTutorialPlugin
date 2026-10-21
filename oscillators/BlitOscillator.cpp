@@ -17,6 +17,7 @@ void BlitOscillator::prepare(double sampleRate)
 {
     // one-pole leak: y = leak * y + x, cut-off kLeakFrequencyHz
     m_leak = std::exp(-kTwoPi * kLeakFrequencyHz / sampleRate);
+    m_triangleLeak = std::exp(-kTwoPi * kTriangleLeakFrequencyHz / sampleRate);
     Oscillator::prepare(sampleRate);
 }
 
@@ -69,9 +70,9 @@ void BlitOscillator::updateIntegrators()
     // rectangle: up at phase 0, down at phase 0.5
     m_rectangle = m_leak * m_rectangle + kJump * (blit(m_phase) - blit(m_phase - kHalfPeriod));
     // triangle: rectangle +1 from phase 0.75 to 0.25, integrated with the slope 4 per period
-    m_triangleRectangle = m_leak * m_triangleRectangle
+    m_triangleRectangle = m_triangleLeak * m_triangleRectangle
                         + kJump * (blit(m_phase - kThreeQuarterPeriod) - blit(m_phase - kQuarterPeriod));
-    m_triangle = m_leak * m_triangle + kTriangleSlope * dt * m_triangleRectangle;
+    m_triangle = m_triangleLeak * m_triangle + kTriangleSlope * dt * m_triangleRectangle;
 }
 
 float BlitOscillator::processSample()

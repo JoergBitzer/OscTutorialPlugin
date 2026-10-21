@@ -31,6 +31,9 @@ public:
     float processSample() override;
 
     static constexpr double kLeakFrequencyHz = 1.0;
+    // the triangle path has two integrators in series: the second one amplifies a DC error of the first by
+    // about 1/(1 - leak) (1300 times at 1 Hz), so its errors (e.g. after a start) must die out faster
+    static constexpr double kTriangleLeakFrequencyHz = 5.0;
     static constexpr int kRunInSamples = 64; // see restart()
 
 protected:
@@ -42,6 +45,7 @@ private:
     void updateIntegrators();
 
     double m_leak = 0.999;
+    double m_triangleLeak = 0.999;
     int m_numTerms = 1; // M = 2 * (number of harmonics) + 1
     double m_sawtooth = 0.0;
     double m_rectangle = 0.0;

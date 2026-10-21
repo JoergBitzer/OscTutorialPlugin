@@ -99,7 +99,8 @@ void WavetableOscillator::fillTable(std::vector<float>& table, Waveform waveform
         {
             continue;
         }
-        if (m_withLanczosSigma)
+        // a sine is not a cut-off series (no Gibbs phenomenon): no sigma factor, its amplitude stays 1
+        if (m_withLanczosSigma && waveform != Waveform::Sine)
         {
             amplitude *= lanczosSigma(k, numHarmonics);
         }
