@@ -12,7 +12,7 @@
 // #include "BinaryData.h"
 
 PresetHandler::PresetHandler()
-	:m_curPresetName("Init"),hasCategories(false)
+	:m_curPresetName(kInitPresetName),hasCategories(false)
 {
 	m_categoryList.push_back("Unknown"); // default is None
 }
@@ -232,11 +232,8 @@ int PresetHandler::loadfromFileAllUserPresets()
 {
 	bool wasCreated;
 	File outfiledir = getUserPresetsFolder(wasCreated);
+	writeInitPreset();
 	auto files = outfiledir.findChildFiles(File::findFiles, true, "*.xml");
-	if (files.isEmpty() == true)
-	{
-		addOrChangeCurrentPreset("Init","Unknown");
-	}
 	for (auto oneFile : files)
 	{
 		auto vt = loadPreset(oneFile.getFileNameWithoutExtension());
@@ -245,6 +242,31 @@ int PresetHandler::loadfromFileAllUserPresets()
 		addPreset(vt);
 	}
 	return files.size();
+}
+
+void PresetHandler::writeInitPreset()
+{
+	// made from the parameters themselves, not from the current state (which may already be changed)
+	ValueTree vt(m_vts->state.getType());
+	for (auto* parameter : m_vts->processor.getParameters())
+	{
+		auto* ranged = dynamic_cast<RangedAudioParameter*>(parameter);
+		if (ranged == nullptr)
+			continue;
+		ValueTree child("PARAM"); // the format of AudioProcessorValueTreeState
+		child.setProperty("id", ranged->getParameterID(), nullptr);
+		child.setProperty("value", ranged->convertFrom0to1(ranged->getDefaultValue()), nullptr);
+		vt.appendChild(child, nullptr);
+	}
+	vt.setProperty("presetname", kInitPresetName, nullptr);
+	vt.setProperty("category", "Unknown", nullptr);
+	vt.setProperty("bank", "Factory", nullptr);
+	vt.setProperty("version", JucePlugin_VersionString, nullptr);
+	addPreset(vt);
+	savePreset(vt);
+	// a new plugin instance starts with the default values: that is "Init"
+	m_curPresetName = kInitPresetName;
+	m_vts->state.setProperty("presetname", kInitPresetName, nullptr);
 }
 
 int PresetHandler::getAllKeys(std::vector<String>& keys, std::vector<String>& presetcats)

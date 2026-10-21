@@ -15,7 +15,8 @@ and ideas: `planning.md` (keep it up to date).
   `Oscilloscope.h/.cpp`, `Spectrum.h/.cpp`: the two pages of the big view (GUI).
 - `tools/analysis/measure_models.py <Tester> [notes]`: aliasing / overshoot / phase of all models; run it after
   changes to an oscillator and compare with the tables in `planning.md`.
-- `res/presets/*.xml`: factory presets (raise `presetversion` when one changes).
+- `res/presets/*.xml`: factory presets (raise `presetversion` when one changes). No factory preset called "Init":
+  "Init" is written at every start from the parameter defaults (`PresetHandler::writeInitPreset`).
 - `PluginProcessor.*`, `PluginEditor.*`: glue code (presets, state, window, preset bar); change rarely.
 - `PluginSettings.h`: block size, GUI size, preset-bar and keyboard layout.
 - `tools/`: template helpers -- `ParameterSpec.h`, `ChoiceParameterSpec.h` (combo boxes, new here), `DayNightLookAndFeel.*`, `PresetHandler.*`,

@@ -27,7 +27,8 @@ periods) or, on its second page, the spectrum.
   them is aliasing -- and the live value "energy outside the harmonics"
 * Linear ADSR envelope, velocity, pitch bend (+-2 semitones), output level
 * MIDI input; on-screen keyboard with pitch and mod wheel
-* Presets (preset bar) with 16 factory presets, among them one sawtooth per model, "Aliasing Demo", and
+* Presets (preset bar) with 16 factory presets and "Init" (always the default values; it is written again at every
+  start, so save your own sounds under another name), among them one sawtooth per model, "Aliasing Demo", and
   "Gibbs Demo" / "Lanczos Demo" for the comparison
 * Day/night theme, resizable window
 * VST3, AU (macOS) and Standalone
