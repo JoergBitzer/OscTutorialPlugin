@@ -40,6 +40,7 @@ void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBl
         oscillator->prepare(sampleRate);
     }
     m_envelope.prepare(sampleRate);
+    m_spectrum.setSampleRate(sampleRate);
     m_heldNotes.clear();
     m_currentNote = kNoNote;
     m_pitchBendSemitones = 0.0;
@@ -230,13 +231,14 @@ void VerySimpleSynthAudio::render(juce::AudioBuffer<float>& buffer, int startSam
         const double phase = m_activeOscillator->getPhase();
         const float oscillator = m_activeOscillator->processSample();
         m_scope.push(oscillator, phase, m_activeOscillator->getPhaseIncrement()); // before the envelope
+        m_spectrum.push(oscillator, m_activeOscillator->getPhaseIncrement());
         out[n] = oscillator * envelope * velocity * level;
     }
 }
 
 
 VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
-:m_processor(p) ,m_apvts(apvts), m_oscilloscope(p.m_algo.getScope(), apvts)
+:m_processor(p) ,m_apvts(apvts), m_oscilloscope(p.m_algo.getScope(), apvts), m_spectrum(p.m_algo.getSpectrum())
 {
     m_oscillatorGroup.setText("Oscillator");
     m_envelopeGroup.setText("Envelope");
@@ -256,6 +258,26 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
     setupKnob(m_level, g_paramLevel);
 
     addAndMakeVisible(m_oscilloscope);
+    addChildComponent(m_spectrum);
+    // the page buttons last: they lie on top of the pages' top row
+    constexpr int kPageRadioGroup = 1;
+    for (auto* button : { &m_oscilloscopePage, &m_spectrumPage })
+    {
+        button->setClickingTogglesState(true);
+        button->setRadioGroupId(kPageRadioGroup);
+        addAndMakeVisible(*button);
+    }
+    m_oscilloscopePage.setToggleState(true, juce::dontSendNotification);
+    m_oscilloscopePage.onClick = [this]() { showPage(false); };
+    m_spectrumPage.onClick = [this]() { showPage(true); };
+    m_oscilloscopePage.setTooltip("1 or 2 periods of the oscillator: the shape of the waveform");
+    m_spectrumPage.setTooltip("The spectrum of the oscillator: aliasing shows up between the harmonics");
+}
+
+void VerySimpleSynthGUI::showPage(bool showSpectrum)
+{
+    m_oscilloscope.setVisible(!showSpectrum);
+    m_spectrum.setVisible(showSpectrum);
 }
 
 template <class Spec>
@@ -339,6 +361,11 @@ void VerySimpleSynthGUI::resized()
     auto controls = r.removeFromTop(static_cast<int>(g_controlsHeight * scale));
     r.removeFromTop(margin);
     m_oscilloscope.setBounds(r);
+    m_spectrum.setBounds(r);
+    auto pageButtons = r.removeFromTop(static_cast<int>(g_choiceHeight * scale))
+                        .removeFromLeft(static_cast<int>(g_pageButtonsWidth * scale));
+    m_oscilloscopePage.setBounds(pageButtons.removeFromLeft(pageButtons.getWidth() / 2));
+    m_spectrumPage.setBounds(pageButtons);
 
     // three groups side by side: oscillator (2 columns of choices, 2 knobs), envelope (4 knobs), output (1 knob)
     constexpr int kOscillatorColumns = 4;

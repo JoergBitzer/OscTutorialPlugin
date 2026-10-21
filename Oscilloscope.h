@@ -5,7 +5,8 @@
     Description: oscilloscope for teaching: shows 1 or 2 periods of the oscillator output (before the
     envelope, so the amplitude is always 1), triggered at the start of a period. Optional: the ideal
     waveform as a thin line (shows overshoot, ringing, smoothing and delay of the models) and the
-    sample points (shows where the corrections act). Grid lines at 0, +-0.5, +-1 and at each quarter period.
+    sample points (shows where the corrections act). The left part of the top row is left free for the
+    page buttons of the editor (Oscilloscope | Spectrum). Grid lines at 0, +-0.5, +-1 and at each quarter period.
     License: MIT
 */
 #pragma once
@@ -40,7 +41,6 @@ private:
     ScopeCapture::Frame m_frame;
     bool m_hasFrame = false;
 
-    juce::Label m_title;
     juce::ComboBox m_cycles;
     juce::ToggleButton m_showIdeal { "Ideal waveform" };
     juce::ToggleButton m_showSamples { "Sample points" };

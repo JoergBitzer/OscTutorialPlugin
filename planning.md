@@ -1,6 +1,7 @@
 # VerySimpleSynth -- planning
 
-Status: version 0.2.1 (oscilloscope, 9 oscillator models) done, 2026-10-21.
+Status: version 0.3.0 (oscilloscope and spectrum, 9 oscillator models) done, 2026-10-21.
+0.3.0: spectrum on a second page of the big view (buttons Oscilloscope | Spectrum).
 0.2.1: Lanczos sigma is a model of its own ("Wavetable + Lanczos", directly below "Wavetable") instead of a switch.
 Version 0.1.0: the first synth with 3 models (sections marked 0.1.0 keep their results).
 
@@ -44,6 +45,18 @@ and measure the difference:
   against the dashed lines at +-1). It is triggered at the start of a period (phase wrap), so the display stands still
   for every model; 1 or 2 periods; the ideal waveform as a thin line and dots at the samples (only if they are at least
   4 px apart, i.e. for high notes). The view settings are not plugin parameters (not saved, not automatable).
+- 0.3.0 (author's request): the spectrum is a second page of the big view, not a smaller panel next to the
+  oscilloscope, so both keep the full size. Two radio buttons (Oscilloscope | Spectrum) at the left of the view's top
+  row; the pages leave that part of their row free. The page is not saved (opens with the oscilloscope).
+- 0.3.0: spectrum = FFT 8192 points, Blackman-Harris window (side lobes -92 dB, so aliases down to about -100 dB are
+  visible), 0 dB = sine with amplitude 1, range 0 .. -120 dB, LINEAR frequency axis 0 .. fs/2 (harmonics equally
+  spaced, aliases visibly between them; a log axis would squeeze the interesting top octaves). Peak per pixel column,
+  so no line is lost. Optional thin marks at the harmonics of f0. Live value "outside the harmonics" = the measurement
+  of `tools/analysis/measure_models.py` (bins farther than 5 bins from every harmonic and from DC, relative to the
+  total); it needs f0 > about 70 Hz (at 48 kHz), otherwise "--". Recomputed 30 times per second when new samples came.
+- 0.3.0: data path: `SpectrumCapture` = `juce::AbstractFifo` (single producer audio thread, single consumer GUI thread,
+  no lock), 32768 samples; the GUI reads it also when the page is hidden, so it never runs full while the editor is
+  open; with the editor closed, new samples are simply dropped.
 - 0.2.1 (author's decision): "Wavetable + Lanczos" is a model in the list, directly below "Wavetable" (not a switch, as in
   0.2.0). The models are ordered for teaching, not for compatibility: presets of 0.2.0 store other model numbers (factory
   presets renumbered, presetversion 3). Two `WavetableOscillator` instances (constructor flag), each builds only its
@@ -78,9 +91,11 @@ PluginProcessor (template)  -- keyboard state merges the on-screen keyboard into
       splits the block at MIDI events, renders the parts in between
       note stack, pitch bend, velocity, level (smoothed)
       Oscillator* m_activeOscillator --> one of 9 models                    (oscillators/*.h/.cpp)
+      SpectrumCapture: FIFO of the oscillator output for the spectrum       (SpectrumCapture.h/.cpp)
       SimpleEnvelope (linear ADSR)                                          (SimpleEnvelope.h/.cpp)
       ScopeCapture: records 1-2 periods of the oscillator output            (ScopeCapture.h/.cpp)
-  VerySimpleSynthGUI  -- groups Oscillator / Envelope / Output, below the Oscilloscope (Oscilloscope.h/.cpp)
+  VerySimpleSynthGUI  -- groups Oscillator / Envelope / Output, below two pages: Oscilloscope (Oscilloscope.h/.cpp)
+                         and Spectrum (Spectrum.h/.cpp, FFT from juce_dsp)
 ```
 The algorithm files do not include any GUI module (they can be tested headless).
 
@@ -178,6 +193,7 @@ a phase lead. The same method works for any non-linear process, which makes it t
 - [x] 0.2.0: oscilloscope (1/2 periods, ideal waveform, sample points), window 880 x 660 .. 1760 x 1320
 - [x] 0.2.0: models PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x; Lanczos sigma for the wavetable
 - [x] 0.2.1: Lanczos sigma as the model "Wavetable + Lanczos" instead of a switch
+- [x] 0.3.0: spectrum page (FFT, harmonic marks, live "outside the harmonics"); Tester option `--click <button text>`
 - [x] 0.2.0: 7 new factory presets (Gibbs Demo, Lanczos Demo, PolyBLEP4 Saw, minBLEP Saw, BLIT Rectangle, DPW Saw,
       Oversampled Saw), presetversion 2 (0.2.1: renumbered models, presetversion 3)
 - [x] 0.2.0: `tools/analysis/measure_models.py`: measures aliasing, peak value and correlation of all models
@@ -195,6 +211,14 @@ a phase lead. The same method works for any non-linear process, which makes it t
 4. Envelope: note on/off, check that the output decays to 0 after the release time.
 5. pluginval strictness 10 (Debug and Release), 3 runs each, no assertions.
 6. GUI snapshot in both themes (virtual display).
+
+## Test results 0.3.0 (2026-10-21, Linux, 48 kHz)
+- Spectrum page, sawtooth at C7: the live value "outside the harmonics" shows -12.8 dB (naive), -90.1 dB (wavetable),
+  -28.5 dB (PolyBLEP); the script measured -12.8 / -85.5 / -28.5 (the wavetable difference: other window and length,
+  both at the floor of the measurement). The wavetable spectrum ends at the 9th harmonic (18.8 kHz): at C7 the table
+  for fundamentals up to 2560 Hz is used, which has only 9 harmonics (the teaching point "loss in the top part of each
+  octave" can be seen directly).
+- Snapshots of both pages (Tester `--click Spectrum`), both themes; Debug build without warnings.
 
 ## Test results 0.2.0 (2026-10-21, Linux, 48 kHz)
 `tools/analysis/measure_models.py build/VerySimpleSynth_Tester 60 96 108` (Debug build). alias = energy outside the
@@ -267,9 +291,10 @@ jumps (its harmonics fall with 1/k^2). minBLEP's low correlation is its phase (d
 - **Wavetable**: crossfade between neighbouring tables (no brightness step), cubic (Hermite) interpolation, tables with
   more samples, mipmaps built by FFT, user-loadable single-cycle waveforms, wavetable morphing. Other sigma
   factors (Fejer = triangle window, raised cosine) next to Lanczos.
-- **Display for teaching**: ~~oscilloscope~~ (done in 0.2.0). Next: a spectrum (FFT) of the output with marks at the
-  harmonics, so aliasing becomes visible (it is hard to see in the time signal); a "difference" mode (model minus
-  wavetable); oscilloscope after the envelope; freeze button; a cursor that shows the value of a sample.
+- **Display for teaching**: ~~oscilloscope~~ (0.2.0), ~~spectrum~~ (0.3.0). Next: colour the aliases (peaks between the
+  harmonics) differently; a "difference" mode (model minus wavetable); a spectrogram while bending the pitch (aliases
+  move the wrong way); log frequency axis as an option; averaging; freeze button; oscilloscope after the envelope;
+  a cursor that shows the value of a sample.
 - **Pulse width** for the rectangle (PWM), hard sync (a good BLEP exercise), a second oscillator, noise.
 - **Filter**: a simple state-variable or ladder low-pass with its own envelope, then the synth becomes "subtractive".
 - **Envelope**: exponential segments (more natural), velocity to attack, envelope display; a sustain change currently
@@ -290,5 +315,7 @@ Found while building this plugin:
 - The preset bar shows the name of the first preset at the start although the default parameters are active
   (seen in the GUI snapshot), probably the same in all AAT plugins.
 - The Tester can only render audio files, a synth needs MIDI: option `--note` added here; could go back into the template.
+- Tester option `--click <button text>` (0.3.0): presses a button before the snapshot (e.g. a page or tab); generic,
+  could go back into the template.
 - `ParameterSpec.h` covers only float parameters; choice parameters (combo boxes) need a spec as well
   (`tools/ChoiceParameterSpec.h` here).

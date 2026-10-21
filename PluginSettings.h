@@ -39,4 +39,5 @@ const float g_versionFontSize(11.0f);
 const int g_versionHeight(14);
 const int g_controlsHeight(190);      // the row with the oscillator, envelope and output groups
 const int g_scopeControlWidth(130);   // the controls of the oscilloscope
+const int g_pageButtonsWidth(220);    // the two page buttons Oscilloscope | Spectrum
 

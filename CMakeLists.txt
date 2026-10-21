@@ -17,7 +17,7 @@ endif()
 
 set(TARGET_NAME VerySimpleSynth)
 
-project(${TARGET_NAME} VERSION 0.2.1)
+project(${TARGET_NAME} VERSION 0.3.0)
 
 if(NOT TARGET juce::juce_core) # JUCE not added by a parent project: use the submodule
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
@@ -93,6 +93,8 @@ target_sources(${TARGET_NAME}
         SimpleEnvelope.cpp
         ScopeCapture.cpp
         Oscilloscope.cpp
+        SpectrumCapture.cpp
+        Spectrum.cpp
         oscillators/Oscillator.cpp
         oscillators/WavetableOscillator.cpp
         oscillators/PolyBlepOscillator.cpp
@@ -155,6 +157,7 @@ target_link_libraries(${TARGET_NAME}
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
         ${TARGET_NAME}-binary
         juce::juce_audio_utils
+        juce::juce_dsp      # FFT for the spectrum display
         # juce::juce_opengl  # if we want to use opengl
     PUBLIC
         juce::juce_recommended_config_flags

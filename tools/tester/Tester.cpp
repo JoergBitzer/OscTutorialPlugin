@@ -20,6 +20,7 @@
       --note <n>            render/snapshot: play MIDI note n (0..127) from the start (for synths)
       --velocity <v>        velocity of --note (1..127, default 100)
       --hold <s>            seconds until the note-off of --note (default: 3/4 of the length)
+      --click <text>        snapshot: click the button with this text first (e.g. a page button; repeatable)
       --list                print all parameters (ID, name, range, default) and exit
       --manual <md|tex>     print the list of controls as a Markdown or LaTeX table and exit
                             (range and default as the plugin shows them, description = the
@@ -49,7 +50,8 @@ int usage()
                  "  Tester --list\n"
                  "  Tester --manual <md|tex>\n"
                  "Options: --preset <file.xml>  --set <id>=<value>  --audio <in.wav>\n"
-                 "         --seconds <s>  --blocksize <n>  --note <n>  --velocity <v>  --hold <s>\n";
+                 "         --seconds <s>  --blocksize <n>  --note <n>  --velocity <v>  --hold <s>\n"
+                 "         --click <button text>\n";
     return 2;
 }
 
@@ -168,6 +170,20 @@ void process(juce::AudioProcessor& processor, const juce::AudioBuffer<float>& au
     }
 }
 
+// the first button (depth first) with this text, or nullptr
+juce::Button* findButton(juce::Component& parent, const juce::String& text)
+{
+    for (auto* child : parent.getChildren())
+    {
+        if (auto* button = dynamic_cast<juce::Button*>(child))
+            if (button->getButtonText() == text)
+                return button;
+        if (auto* found = findButton(*child, text))
+            return found;
+    }
+    return nullptr;
+}
+
 bool readWav(const juce::File& file, juce::AudioBuffer<float>& audio, double& sampleRate)
 {
     juce::AudioFormatManager formats;
@@ -226,6 +242,7 @@ int main(int argc, char* argv[])
     TestNote testNote;
     double holdSeconds = -1.0;
     juce::StringArray settings;
+    juce::StringArray clicks;
     juce::StringArray positional;
     for (int i = 0; i < args.size(); ++i)
     {
@@ -239,6 +256,7 @@ int main(int argc, char* argv[])
         else if (a == "--note" && hasValue)      testNote.note = juce::jlimit(0, 127, args[++i].getIntValue());
         else if (a == "--velocity" && hasValue)  testNote.velocity = juce::jlimit(1, 127, args[++i].getIntValue());
         else if (a == "--hold" && hasValue)      holdSeconds = args[++i].getDoubleValue();
+        else if (a == "--click" && hasValue)     clicks.add(args[++i]);
         else if (a.startsWith("--"))             { std::cout << "Unknown option " << a << "\n"; return usage(); }
         else                                     positional.add(a);
     }
@@ -302,6 +320,16 @@ int main(int argc, char* argv[])
     }
     editor->setVisible(true);
     editor->addToDesktop(0); // offscreen window: some components only paint with a peer
+    for (const auto& text : clicks)
+    {
+        auto* button = findButton(*editor, text);
+        if (button == nullptr)
+        {
+            std::cout << "No button with the text " << text << "\n";
+            return 1;
+        }
+        button->triggerClick(); // asynchronous: runs in the message loop below
+    }
     testNote.noteOffSample = (int) (seconds * sampleRate); // held until the snapshot
     if (holdSeconds >= 0.0)
         testNote.noteOffSample = (int) (holdSeconds * sampleRate);
