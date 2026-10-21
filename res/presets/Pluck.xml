@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VerySimpleSynthVTS presetname="Pluck" category="Unknown" bank="Factory" presetversion="1">
+  <PARAM id="Model" value="1.0"/>
+  <PARAM id="Waveform" value="3.0"/>
+  <PARAM id="Octave" value="0.0"/>
+  <PARAM id="FineTune" value="0.0"/>
+  <PARAM id="Attack" value="1.0"/>
+  <PARAM id="Decay" value="400.0"/>
+  <PARAM id="Sustain" value="0.0"/>
+  <PARAM id="Release" value="300.0"/>
+  <PARAM id="Level" value="-12.0"/>
+</VerySimpleSynthVTS>

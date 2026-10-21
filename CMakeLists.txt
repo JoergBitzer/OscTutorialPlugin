@@ -17,7 +17,7 @@ endif()
 
 set(TARGET_NAME VerySimpleSynth)
 
-project(${TARGET_NAME} VERSION 0.0.3)
+project(${TARGET_NAME} VERSION 0.1.0)
 
 if(NOT TARGET juce::juce_core) # JUCE not added by a parent project: use the submodule
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
@@ -41,8 +41,8 @@ configure_file(Versioning.h.in Versioning.h)
 #    `kAudioUnitType_MusicDevice`, `kAudioUnitType_MusicEffect`, `kAudioUnitType_OfflineEffect`,
 #    `kAudioUnitType_Output`, `kAudioUnitType_Panner`
 
-# add_compile_definitions(FACTORY_PRESETS) # use this if you have finally some presets to add (see binary files below)
-# add_compile_definitions(WITH_MIDIKEYBOARD)
+add_compile_definitions(FACTORY_PRESETS) # factory presets in res/presets (see binary files below)
+add_compile_definitions(WITH_MIDIKEYBOARD)
 add_compile_definitions(WITH_PRESETHANDLERGUI)
 add_compile_definitions(WITH_DAYNIGHT) # day/night theme button in the preset bar (needs WITH_PRESETHANDLERGUI)
 
@@ -57,16 +57,16 @@ juce_add_plugin(${TARGET_NAME}
     # ICON_SMALL ...
     # COMPANY_NAME ...                          # Specify the name of the plugin's author
     COMPANY_NAME  "Jade_Hochschule"             # Specify the name of the plugin's author
-    IS_SYNTH FALSE                       # Is this a synth or an effect?
-    NEEDS_MIDI_INPUT FALSE               # Does the plugin need midi input?
+    IS_SYNTH TRUE                        # Is this a synth or an effect?
+    NEEDS_MIDI_INPUT TRUE                # Does the plugin need midi input?
     NEEDS_MIDI_OUTPUT FALSE              # Does the plugin need midi output?
     # IS_MIDI_EFFECT TRUE/FALSE                 # Is this plugin a MIDI effect?
     # EDITOR_WANTS_KEYBOARD_FOCUS TRUE/FALSE    # Does the editor need keyboard focus?
-    VST3_CATEGORIES "Fx" "EQ"                        
-    AU_MAIN_TYPE "kAudioUnitType_Effect"
+    VST3_CATEGORIES "Instrument" "Synth"                        
+    AU_MAIN_TYPE "kAudioUnitType_MusicDevice"
     COPY_PLUGIN_AFTER_BUILD FALSE               # Should the plugin be installed to a default location after building?
     PLUGIN_MANUFACTURER_CODE IHAJ               # A four-character manufacturer id with at least one upper-case character
-    PLUGIN_CODE tep1                            # A unique four-character plugin id with at least one upper-case character
+    PLUGIN_CODE VsS1                            # A unique four-character plugin id with at least one upper-case character
     FORMATS AU VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
     PRODUCT_NAME "VerySimpleSynth")     # The name of the final executable, which can differ from the target name
 #
@@ -90,6 +90,8 @@ target_sources(${TARGET_NAME}
         PluginEditor.cpp
         PluginProcessor.cpp
         VerySimpleSynth.cpp
+        Oscillators.cpp
+        SimpleEnvelope.cpp
         tools/DayNightLookAndFeel.cpp
         tools/MidiModPitchState.cpp
         tools/PresetHandler.cpp
@@ -126,24 +128,24 @@ target_compile_definitions(${TARGET_NAME}
 
 
 # use this code for binaries (e.g. presets)
-#file(GLOB TEMPLATE_RESOURCES_GLOB
-#  res/*.xml
-#  )
+file(GLOB TEMPLATE_RESOURCES_GLOB
+  res/presets/*.xml
+  )
 
-#juce_add_binary_data( ${TARGET_NAME}-binary
-#  SOURCES ${TEMPLATE_RESOURCES_GLOB}
-#)
-#if( UNIX AND NOT APPLE )
-#set_target_properties(${TARGET_NAME}-binary PROPERTIES
-#    POSITION_INDEPENDENT_CODE TRUE)
-#endif()
+juce_add_binary_data( ${TARGET_NAME}-binary
+  SOURCES ${TEMPLATE_RESOURCES_GLOB}
+)
+if( UNIX AND NOT APPLE )
+set_target_properties(${TARGET_NAME}-binary PROPERTIES
+    POSITION_INDEPENDENT_CODE TRUE)
+endif()
 
 
 
 target_link_libraries(${TARGET_NAME}
     PRIVATE
         # AudioPluginData           # If we'd created a binary data target, we'd link to it here
-        # AudioPluginVerySimpleSynth-binary # or here if we used the recursice method
+        ${TARGET_NAME}-binary
         juce::juce_audio_utils
         # juce::juce_opengl  # if we want to use opengl
     PUBLIC

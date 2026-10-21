@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<VerySimpleSynthVTS presetname="Triangle Flute" category="Unknown" bank="Factory" presetversion="1">
+  <PARAM id="Model" value="2.0"/>
+  <PARAM id="Waveform" value="1.0"/>
+  <PARAM id="Octave" value="1.0"/>
+  <PARAM id="FineTune" value="0.0"/>
+  <PARAM id="Attack" value="60.0"/>
+  <PARAM id="Decay" value="200.0"/>
+  <PARAM id="Sustain" value="85.0"/>
+  <PARAM id="Release" value="200.0"/>
+  <PARAM id="Level" value="-9.0"/>
+</VerySimpleSynthVTS>
