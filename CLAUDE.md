@@ -11,7 +11,8 @@ and ideas: `planning.md` (keep it up to date).
   `vss::OscillatorModel` must match `g_paramModel`. The list is ordered for teaching (author's decision); presets store
   the index, so renumber `res/presets` (and raise `presetversion`) when the order changes.
   `SimpleEnvelope.h/.cpp`: linear ADSR; `ScopeCapture.h/.cpp`: recording for the oscilloscope (audio thread never
-  waits). No GUI code in these files. `Oscilloscope.h/.cpp`: the display (GUI).
+  waits); `SpectrumCapture.h/.cpp`: lock-free FIFO for the spectrum. No GUI code in these files.
+  `Oscilloscope.h/.cpp`, `Spectrum.h/.cpp`: the two pages of the big view (GUI).
 - `tools/analysis/measure_models.py <Tester> [notes]`: aliasing / overshoot / phase of all models; run it after
   changes to an oscillator and compare with the tables in `planning.md`.
 - `res/presets/*.xml`: factory presets (raise `presetversion` when one changes).
@@ -24,7 +25,8 @@ and ideas: `planning.md` (keep it up to date).
 - Docs: `README.md`, `planning.md`, `HowToTestYourPlugin.md`, `docs/HowToDoc.md`, manual in `docs/manual/`,
   the template's README in `docs/AAT2_README.md`.
 - Test a synth with the Tester: `--note <n> [--velocity <v>] [--hold <s>]` plays a MIDI note (render needs an
-  input wav only for the length and the sample rate, e.g. silence).
+  input wav only for the length and the sample rate, e.g. silence). `--click <button text>` presses a button before
+  a snapshot, e.g. `--click Spectrum` for the spectrum page.
 
 ## Build
 ```console

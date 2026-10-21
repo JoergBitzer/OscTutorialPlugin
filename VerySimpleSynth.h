@@ -19,6 +19,8 @@
 #include "SimpleEnvelope.h"
 #include "ScopeCapture.h"
 #include "Oscilloscope.h"
+#include "SpectrumCapture.h"
+#include "Spectrum.h"
 
 class VerySimpleSynthAudioProcessor;
 
@@ -163,6 +165,8 @@ public:
     int getLatency(){return m_Latency;};
     // the recordings of the oscillator output for the oscilloscope (GUI thread: copyLatest, setCycles)
     ScopeCapture& getScope(){return m_scope;};
+    // the oscillator output for the spectrum (GUI thread: pull)
+    SpectrumCapture& getSpectrum(){return m_spectrum;};
 
 private:
     void updateParameters();
@@ -209,6 +213,7 @@ private:
     vss::OscillatorModel m_activeModel = vss::OscillatorModel::Naive;
 
     ScopeCapture m_scope;
+    SpectrumCapture m_spectrum;
 
     vss::SimpleEnvelope m_envelope;
 
@@ -270,5 +275,10 @@ private:
     Knob m_release;
     Knob m_level;
 
+    // the big view: two pages, oscilloscope and spectrum, chosen with two buttons (a radio group)
+    void showPage(bool showSpectrum);
     Oscilloscope m_oscilloscope;
+    Spectrum m_spectrum;
+    juce::TextButton m_oscilloscopePage { "Oscilloscope" };
+    juce::TextButton m_spectrumPage { "Spectrum" };
 };

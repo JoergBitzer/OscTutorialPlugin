@@ -22,9 +22,6 @@ constexpr float kPlotDarker = 0.3f; // the plot area is a bit darker than the wi
 Oscilloscope::Oscilloscope(ScopeCapture& capture, juce::AudioProcessorValueTreeState& apvts)
 : m_capture(capture), m_apvts(apvts)
 {
-    m_title.setText("Oscilloscope (oscillator before the envelope)", juce::dontSendNotification);
-    addAndMakeVisible(m_title);
-
     m_cycles.addItem("1 period", kOneCycleId);
     m_cycles.addItem("2 periods", kTwoCyclesId);
     m_cycles.setSelectedId(kTwoCyclesId, juce::dontSendNotification);
@@ -83,8 +80,6 @@ void Oscilloscope::resized()
     m_showSamples.setBounds(row.removeFromRight(controlWidth));
     m_showIdeal.setBounds(row.removeFromRight(controlWidth));
     m_cycles.setBounds(row.removeFromRight(controlWidth).reduced(static_cast<int>(g_guiMargin * scale), 0));
-    m_title.setFont(juce::FontOptions(g_labelFontSize * scale));
-    m_title.setBounds(row);
 }
 
 void Oscilloscope::paint(juce::Graphics& g)
@@ -220,11 +215,11 @@ void Oscilloscope::paintInfo(juce::Graphics& g, juce::Rectangle<float> area)
     const float scale = scaleFactor();
     g.setColour(getLookAndFeel().findColour(juce::Label::textColourId));
     g.setFont(g_versionFontSize * scale);
-    juce::String text("Play a note");
+    juce::String text("Oscillator before the envelope. Play a note");
     if (m_hasFrame && m_frame.numPoints > 0)
     {
         const auto [minimum, maximum] = std::minmax_element(m_frame.y.begin(), m_frame.y.end());
-        text = juce::String(m_frame.samplesPerCycle, 1) + " samples per period    max " + juce::String(*maximum, 3)
+        text = "Oscillator before the envelope    " + juce::String(m_frame.samplesPerCycle, 1) + " samples per period    max " + juce::String(*maximum, 3)
              + "    min " + juce::String(*minimum, 3);
     }
     g.drawText(text, area.reduced(g_guiMargin * scale), juce::Justification::topLeft);

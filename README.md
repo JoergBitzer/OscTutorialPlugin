@@ -3,7 +3,8 @@
 A very simple monophonic synthesizer for teaching: one oscillator, one ADSR envelope -- and a switch between nine
 ways to build the oscillator (naive, wavetable, wavetable with Lanczos sigma, polyBLEP, 4-point polyBLEP, minBLEP, BLIT,
 DPW, oversampling), so you
-can hear, see and measure aliasing and the side effects of each method. A large oscilloscope shows 1 or 2 periods.
+can hear, see and measure aliasing and the side effects of each method. A large view shows the oscilloscope (1 or 2
+periods) or, on its second page, the spectrum.
 
 ![VerySimpleSynth](docs/images/GUI.png)
 
@@ -22,6 +23,8 @@ can hear, see and measure aliasing and the side effects of each method. A large 
   * **Oversampling 8x**: naive at 8 fs, low-pass filter, decimation.
 * Oscilloscope: 1 or 2 periods of the oscillator (before the envelope), triggered at the start of a period, with the
   ideal waveform and the sample points
+* Spectrum (second page): FFT of the oscillator, linear frequency axis, marks at the harmonics -- every peak between
+  them is aliasing -- and the live value "energy outside the harmonics"
 * Linear ADSR envelope, velocity, pitch bend (+-2 semitones), output level
 * MIDI input; on-screen keyboard with pitch and mod wheel
 * Presets (preset bar) with 16 factory presets, among them one sawtooth per model, "Aliasing Demo", and
@@ -36,6 +39,8 @@ Monophonic with last-note priority: hold a key, press another one, release it --
   belong to the note (they even fall when the pitch rises). Switch through the models: they are gone or weaker.
 * Load "Gibbs Demo" and play C5: the oscilloscope shows the ringing at the jumps. Choose "Wavetable + Lanczos".
 * Choose PolyBLEP and a high note: the dots show that only the samples next to a jump are changed.
+* Open the Spectrum page, play C7 and step through the models: watch the peaks between the harmonic marks and the
+  value "outside the harmonics".
 
 Measured energy outside the harmonics (sawtooth, note C7 = 2093 Hz, 48 kHz, `tools/analysis/measure_models.py`):
 
@@ -65,6 +70,7 @@ Measured energy outside the harmonics (sawtooth, note C7 = 2093 Hz, 48 kHz, `too
 | `SimpleEnvelope.h/.cpp` | the linear ADSR |
 | `VerySimpleSynth.h/.cpp` | parameters, MIDI handling (note stack, pitch bend), rendering, GUI |
 | `ScopeCapture.h/.cpp`, `Oscilloscope.h/.cpp` | recording (audio thread) and display (GUI) of the oscilloscope |
+| `SpectrumCapture.h/.cpp`, `Spectrum.h/.cpp` | FIFO (audio thread) and FFT display (GUI) of the spectrum |
 | `tools/analysis/measure_models.py` | measures aliasing, overshoot and phase of all models (numpy) |
 | `res/presets/` | factory presets |
 | `planning.md` | decisions, how the models work, test results, ideas how to go on |
