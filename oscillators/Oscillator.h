@@ -4,7 +4,7 @@
     Date: 2026-10-21
     Description: the common part of all oscillator models (phase accumulator) and the naive model.
     The other models, one file each (see planning.md):
-      WavetableOscillator.h     band-limited tables (one per octave), optional Lanczos sigma
+      WavetableOscillator.h     band-limited tables (one per octave), without or with Lanczos sigma
       PolyBlepOscillator.h      naive + polyBLEP/polyBLAMP corrections, 2-point and 4-point
       MinBlepOscillator.h       naive + minimum-phase BLEP/BLAMP from a table
       BlitOscillator.h          integrated band-limited impulse trains
@@ -32,6 +32,7 @@ enum class OscillatorModel
 {
     Naive = 0,
     Wavetable,
+    WavetableLanczos,
     PolyBlep,
     PolyBlep4,
     MinBlep,

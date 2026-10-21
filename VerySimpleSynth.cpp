@@ -17,8 +17,9 @@ VerySimpleSynthAudio::VerySimpleSynthAudio(VerySimpleSynthAudioProcessor* proces
 :SynchronBlockProcessor(), m_processor(processor)
 {
     m_heldNotes.reserve(kNumMidiNotes); // no allocation in the audio thread
-    m_oscillators = { &m_naiveOscillator, &m_wavetableOscillator, &m_polyBlepOscillator, &m_polyBlep4Oscillator,
-                      &m_minBlepOscillator, &m_blitOscillator, &m_dpwOscillator, &m_oversamplingOscillator };
+    m_oscillators = { &m_naiveOscillator, &m_wavetableOscillator, &m_wavetableLanczosOscillator, &m_polyBlepOscillator,
+                      &m_polyBlep4Oscillator, &m_minBlepOscillator, &m_blitOscillator, &m_dpwOscillator,
+                      &m_oversamplingOscillator };
 }
 
 void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBlock, int max_channels)
@@ -81,7 +82,6 @@ void VerySimpleSynthAudio::addParameter(std::vector<std::unique_ptr<juce::Ranged
     // one line per parameter, made from its definition in VerySimpleSynth.h (see tools/ParameterSpec.h)
     paramVector.push_back(jade::makeChoiceParameter(g_paramModel));
     paramVector.push_back(jade::makeChoiceParameter(g_paramWaveform));
-    paramVector.push_back(jade::makeSwitchParameter(g_paramLanczosSigma));
     paramVector.push_back(jade::makeParameter(g_paramOctave));
     paramVector.push_back(jade::makeParameter(g_paramFineTune));
     paramVector.push_back(jade::makeParameter(g_paramAttack));
@@ -95,7 +95,6 @@ void VerySimpleSynthAudio::prepareParameter(std::unique_ptr<juce::AudioProcessor
 {
     m_model = vts->getRawParameterValue(g_paramModel.ID);
     m_waveform = vts->getRawParameterValue(g_paramWaveform.ID);
-    m_lanczosSigma = vts->getRawParameterValue(g_paramLanczosSigma.ID);
     m_octave = vts->getRawParameterValue(g_paramOctave.ID);
     m_fineTune = vts->getRawParameterValue(g_paramFineTune.ID);
     m_attack = vts->getRawParameterValue(g_paramAttack.ID);
@@ -110,7 +109,6 @@ void VerySimpleSynthAudio::updateParameters()
     const auto waveform = static_cast<vss::Waveform>(juce::roundToInt(m_waveform->load()));
     m_octaveShift = m_octave->load();
     m_fineTuneCent = m_fineTune->load();
-    m_wavetableOscillator.setLanczosSigma(m_lanczosSigma->load() >= 0.5f);
 
     // oscillator model: the new oscillator gets waveform and frequency, then continues with the
     // phase of the old one (no click; setPhase also sets its inner state to fit)
@@ -249,7 +247,6 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
 
     setupChoice(m_model, g_paramModel);
     setupChoice(m_waveform, g_paramWaveform);
-    setupSwitch(m_lanczosSigma, g_paramLanczosSigma);
     setupKnob(m_octave, g_paramOctave);
     setupKnob(m_fineTune, g_paramFineTune);
     setupKnob(m_attack, g_paramAttack);
@@ -257,9 +254,6 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
     setupKnob(m_sustain, g_paramSustain);
     setupKnob(m_release, g_paramRelease);
     setupKnob(m_level, g_paramLevel);
-
-    m_model.comboBox.onChange = [this]() { updateLanczosSigmaEnabled(); };
-    updateLanczosSigmaEnabled();
 
     addAndMakeVisible(m_oscilloscope);
 }
@@ -289,21 +283,6 @@ void VerySimpleSynthGUI::setupChoice(Choice& choice, const Spec& spec)
     choice.label.setJustificationType(juce::Justification::bottomLeft);
     addAndMakeVisible(choice.comboBox);
     addAndMakeVisible(choice.label);
-}
-
-template <class Spec>
-void VerySimpleSynthGUI::setupSwitch(Switch& control, const Spec& spec)
-{
-    control.button.setButtonText(spec.name);
-    control.button.setTooltip(jade::switchHelpText(spec));
-    control.attachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(m_apvts, spec.ID, control.button);
-    addAndMakeVisible(control.button);
-}
-
-void VerySimpleSynthGUI::updateLanczosSigmaEnabled()
-{
-    const int wavetableId = static_cast<int>(vss::OscillatorModel::Wavetable) + 1; // combo box ids start at 1
-    m_lanczosSigma.button.setEnabled(m_model.comboBox.getSelectedId() == wavetableId);
 }
 
 float VerySimpleSynthGUI::scaleFactor() const
@@ -385,13 +364,11 @@ void VerySimpleSynthGUI::resized()
         area->reduce(margin, margin);
     }
 
-    // oscillator: model, waveform and Lanczos sigma on the left, the two knobs on the right
+    // oscillator: model and waveform on the left, the two knobs on the right
     auto choices = oscillatorArea.removeFromLeft(oscillatorArea.getWidth() / 2);
     choices.removeFromRight(margin);
     placeChoice(m_model, choices);
     placeChoice(m_waveform, choices);
-    choices.removeFromTop(margin);
-    m_lanczosSigma.button.setBounds(choices.removeFromTop(static_cast<int>(g_choiceHeight * scale)));
     const int oscillatorKnobWidth = oscillatorArea.getWidth() / 2;
     placeKnob(m_octave, oscillatorArea.removeFromLeft(oscillatorKnobWidth));
     placeKnob(m_fineTune, oscillatorArea);

@@ -7,8 +7,9 @@ and ideas: `planning.md` (keep it up to date).
 - `VerySimpleSynth.h/.cpp`: the parameters (structs), the synth (`VerySimpleSynthAudio`: MIDI, note stack,
   fixed-size blocks via `SynchronBlockProcessor`) and the GUI (`VerySimpleSynthGUI`).
 - `oscillators/`: the oscillator models, one file each (`Oscillator.h`: base class, naive model, shared helpers;
-  wavetable with Lanczos sigma, polyBLEP 2/4-point, minBLEP, BLIT, DPW, oversampling). The order of
-  `vss::OscillatorModel` must match `g_paramModel`; append new models at the end (presets store the index).
+  wavetable without/with Lanczos sigma, polyBLEP 2/4-point, minBLEP, BLIT, DPW, oversampling). The order of
+  `vss::OscillatorModel` must match `g_paramModel`. The list is ordered for teaching (author's decision); presets store
+  the index, so renumber `res/presets` (and raise `presetversion`) when the order changes.
   `SimpleEnvelope.h/.cpp`: linear ADSR; `ScopeCapture.h/.cpp`: recording for the oscilloscope (audio thread never
   waits). No GUI code in these files. `Oscilloscope.h/.cpp`: the display (GUI).
 - `tools/analysis/measure_models.py <Tester> [notes]`: aliasing / overshoot / phase of all models; run it after

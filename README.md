@@ -1,7 +1,8 @@
 # VerySimpleSynth
 
-A very simple monophonic synthesizer for teaching: one oscillator, one ADSR envelope -- and a switch between eight
-ways to build the oscillator (naive, wavetable, polyBLEP, 4-point polyBLEP, minBLEP, BLIT, DPW, oversampling), so you
+A very simple monophonic synthesizer for teaching: one oscillator, one ADSR envelope -- and a switch between nine
+ways to build the oscillator (naive, wavetable, wavetable with Lanczos sigma, polyBLEP, 4-point polyBLEP, minBLEP, BLIT,
+DPW, oversampling), so you
 can hear, see and measure aliasing and the side effects of each method. A large oscilloscope shows 1 or 2 periods.
 
 ![VerySimpleSynth](docs/images/GUI.png)
@@ -11,7 +12,8 @@ can hear, see and measure aliasing and the side effects of each method. A large 
 * Oscillator model (the teaching part):
   * **Naive**: the ideal waveform, sampled. Simple, but with strong aliasing for high notes.
   * **Wavetable**: band-limited tables (Fourier series, one table per octave), linear interpolation.
-    Optional **Lanczos sigma** factors: reduce the Gibbs overshoot at the jumps from 9 % to about 1 %.
+  * **Wavetable + Lanczos**: the same with Lanczos sigma factors: the Gibbs overshoot at the jumps drops from 9 % to
+    about 1 %.
   * **PolyBLEP**: the naive waveform with polynomial corrections at jumps (polyBLEP) and corners (polyBLAMP).
   * **PolyBLEP 4-point**: the same with a cubic B-spline over 4 samples.
   * **minBLEP**: minimum-phase corrections from a table (no pre-ringing, but a small delay).
@@ -32,7 +34,7 @@ Monophonic with last-note priority: hold a key, press another one, release it --
 ### Try it
 * Load "Aliasing Demo" and play a scale in the upper octaves: with the model Naive you hear extra tones that do not
   belong to the note (they even fall when the pitch rises). Switch through the models: they are gone or weaker.
-* Load "Gibbs Demo" and play C5: the oscilloscope shows the ringing at the jumps. Switch on Lanczos sigma.
+* Load "Gibbs Demo" and play C5: the oscilloscope shows the ringing at the jumps. Choose "Wavetable + Lanczos".
 * Choose PolyBLEP and a high note: the dots show that only the samples next to a jump are changed.
 
 Measured energy outside the harmonics (sawtooth, note C7 = 2093 Hz, 48 kHz, `tools/analysis/measure_models.py`):
@@ -44,9 +46,8 @@ Measured energy outside the harmonics (sawtooth, note C7 = 2093 Hz, 48 kHz, `too
 ## Controls
 | Control | Range | Default | Description |
 |---|---|---|---|
-| Model | Naive - Oversampling 8x | Naive | How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), Wavetable (band-limited tables, one per octave), PolyBLEP and PolyBLEP 4-point (naive waveform with polynomial corrections at jumps and corners), minBLEP (minimum-phase corrections from a table), BLIT (integrated band-limited impulse trains), DPW (differentiated antiderivative), Oversampling 8x (naive at 8 fs, filtered). |
+| Model | Naive - Oversampling 8x | Naive | How the oscillator makes the waveform: Naive (sampled ideal waveform, aliasing), Wavetable (band-limited tables, one per octave), Wavetable + Lanczos (harmonics weighted with Lanczos sigma factors: less overshoot at jumps), PolyBLEP and PolyBLEP 4-point (naive waveform with polynomial corrections at jumps and corners), minBLEP (minimum-phase corrections from a table), BLIT (integrated band-limited impulse trains), DPW (differentiated antiderivative), Oversampling 8x (naive at 8 fs, filtered). |
 | Waveform | Sine - Sawtooth | Sawtooth | The waveform of the oscillator (Rectangle: 50 % duty cycle). |
-| Lanczos sigma | Off - On | Off | Wavetable only: weights the harmonics with Lanczos sigma factors, which reduces the overshoot at jumps (Gibbs phenomenon) from 9 % to about 1 %. |
 | Octave | -3 - 3 | 0 | Shifts the pitch by whole octaves. |
 | Fine tune | -100 cent - 100 cent | 0 cent | Fine tuning in cent (100 cent = 1 semitone). |
 | Attack | 1 ms - 5000 ms | 10 ms | Time to rise to full level after a key is pressed. |

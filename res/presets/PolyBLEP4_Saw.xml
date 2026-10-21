@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<VerySimpleSynthVTS presetname="PolyBLEP4 Saw" category="Unknown" bank="Factory" presetversion="2">
-  <PARAM id="Model" value="3.0"/>
+<VerySimpleSynthVTS presetname="PolyBLEP4 Saw" category="Unknown" bank="Factory" presetversion="3">
+  <PARAM id="Model" value="4.0"/>
   <PARAM id="Waveform" value="3.0"/>
-  <PARAM id="LanczosSigma" value="0.0"/>
   <PARAM id="Octave" value="0.0"/>
   <PARAM id="FineTune" value="0.0"/>
   <PARAM id="Attack" value="5.0"/>
