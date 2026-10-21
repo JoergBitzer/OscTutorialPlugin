@@ -1,6 +1,7 @@
 # VerySimpleSynth -- planning
 
-Status: version 0.3.0 (oscilloscope and spectrum, 9 oscillator models) done, 2026-10-21.
+Status: version 0.3.1 (oscilloscope and spectrum, 9 oscillator models) done, 2026-10-21.
+0.3.1: the preset "Init" always holds the default values (fix from the template, AAT2 0.0.4).
 0.3.0: spectrum on a second page of the big view (buttons Oscilloscope | Spectrum).
 0.2.1: Lanczos sigma is a model of its own ("Wavetable + Lanczos", directly below "Wavetable") instead of a switch.
 Version 0.1.0: the first synth with 3 models (sections marked 0.1.0 keep their results).
@@ -193,6 +194,7 @@ a phase lead. The same method works for any non-linear process, which makes it t
 - [x] 0.2.0: oscilloscope (1/2 periods, ideal waveform, sample points), window 880 x 660 .. 1760 x 1320
 - [x] 0.2.0: models PolyBLEP 4-point, minBLEP, BLIT, DPW, Oversampling 8x; Lanczos sigma for the wavetable
 - [x] 0.2.1: Lanczos sigma as the model "Wavetable + Lanczos" instead of a switch
+- [x] 0.3.1: "Init" = default values (PresetHandler from the template, AAT2 0.0.4)
 - [x] 0.3.0: spectrum page (FFT, harmonic marks, live "outside the harmonics"); Tester option `--click <button text>`
 - [x] 0.2.0: 7 new factory presets (Gibbs Demo, Lanczos Demo, PolyBLEP4 Saw, minBLEP Saw, BLIT Rectangle, DPW Saw,
       Oversampled Saw), presetversion 2 (0.2.1: renumbered models, presetversion 3)
@@ -311,9 +313,13 @@ Found while building this plugin:
   reports latency 0 although the synchronous block delays by `g_desired_blocksize_ms`. Fixed here
   (`=` and `setLatencySamples` in `prepareToPlay`). As soon as a latency is reported, JUCE's default
   `processBlockBypassed` asserts (pluginval: hundreds of assertions in "Parameter thread safety"): an effect must then
-  delay its input by the latency when bypassed, a synth outputs silence (done here). Both should go back into the template.
+  delay its input by the latency when bypassed, a synth outputs silence (done here). **Fixed in the template (AAT2 and
+  main, 0.0.4)**: `tools/BypassDelay.h` for effects; the Tester prints the reported latency and has `--bypass`.
 - The preset bar shows the name of the first preset at the start although the default parameters are active
-  (seen in the GUI snapshot), probably the same in all AAT plugins.
+  (seen in the GUI snapshot), probably the same in all AAT plugins. **Fixed in the template (AAT2 and main, 0.0.4,
+  2026-10-21)** and taken over here in 0.3.1: "Init" is written from the parameter defaults at every start
+  (`PresetHandler::writeInitPreset`), so a new instance shows "Init" with the default values. Tested with the 16
+  factory presets: the bar shows "Init", a hand change of Init.xml is replaced at the next start.
 - The Tester can only render audio files, a synth needs MIDI: option `--note` added here; could go back into the template.
 - Tester option `--click <button text>` (0.3.0): presses a button before the snapshot (e.g. a page or tab); generic,
   could go back into the template.

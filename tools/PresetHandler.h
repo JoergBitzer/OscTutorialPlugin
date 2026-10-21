@@ -19,6 +19,10 @@
 								  newly created folder: a missing preset is copied, an unmodified
 								  factory copy (bank "Factory") is updated if the embedded
 								  "presetversion" is higher; user-saved presets are never touched
+	// Version 1.4.0 21.10.26 JB: "Init" always holds the default values of all parameters: it is
+								  written at every start (before, only into an empty folder, so with
+								  factory presets there was no "Init" and the preset bar showed the
+								  first preset, although the default values were active)
 
   ==============================================================================
 */
@@ -69,7 +73,12 @@ public:
 	ValueTree loadPreset(String name);
 	int loadPresetAndActivate(String name);
 	int deletePresetFile(String name);
+	// writes "Init" (see writeInitPreset) and reads all presets of the user folder
 	int loadfromFileAllUserPresets();
+	// "Init" = the default values of all parameters; written again at every start, so a change
+	// saved under "Init" does not last (save your own sounds under another name)
+	void writeInitPreset();
+	static constexpr const char* kInitPresetName = "Init";
 	size_t getNrOfPresets() { return m_presetList.size(); };
 	int getAllKeys(std::vector<String>& keys, std::vector<String>& presetcats);
 
