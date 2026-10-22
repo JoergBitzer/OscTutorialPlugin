@@ -1,4 +1,4 @@
-# Builds VerySimpleSynth for Windows, macOS and Linux (AAT2 template, see README).
+# Builds OscTutorialPlugin for Windows, macOS and Linux (AAT2 template, see README).
 #  - push a tag vX.Y.Z (must match the VERSION in CMakeLists.txt):
 #    builds all platforms and creates a GitHub Release with the zips
 #  - "Run workflow" button on the Actions page: builds only, the zips are
@@ -11,8 +11,8 @@ on:
   workflow_dispatch:
 
 env:
-  PRODUCT: VerySimpleSynth
-  ARTEFACTS: build/VerySimpleSynth_artefacts/Release
+  PRODUCT: OscTutorialPlugin
+  ARTEFACTS: build/OscTutorialPlugin_artefacts/Release
   # put into every zip next to the plugins (the manual, docs/manual/*.pdf, is added if it exists)
   DOCS: release/ReadMeFirst.txt LICENSE LICENSE-AGPL-3.0.txt
 
@@ -26,17 +26,17 @@ jobs:
         include:
           - name: Windows
             os: windows-latest
-            targets: VerySimpleSynth_VST3 VerySimpleSynth_Standalone
+            targets: OscTutorialPlugin_VST3 OscTutorialPlugin_Standalone
             cmake_args: ''
           - name: macOS
             os: macos-latest
-            targets: VerySimpleSynth_VST3 VerySimpleSynth_AU VerySimpleSynth_Standalone
+            targets: OscTutorialPlugin_VST3 OscTutorialPlugin_AU OscTutorialPlugin_Standalone
             # one Universal binary for Apple Silicon and Intel
             cmake_args: -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.13
           - name: Linux
             # older Ubuntu = older glibc, so the binaries also run on older distributions
             os: ubuntu-22.04
-            targets: VerySimpleSynth_VST3 VerySimpleSynth_Standalone
+            targets: OscTutorialPlugin_VST3 OscTutorialPlugin_Standalone
             cmake_args: ''
 
     steps:
@@ -185,7 +185,7 @@ jobs:
 
           **macOS:** the binaries are not signed with an Apple Developer ID yet. If macOS says the
           plugin is damaged or cannot be opened, remove the quarantine flag in the Terminal, e.g.
-          `xattr -cr ~/Library/Audio/Plug-Ins/VST3/VerySimpleSynth.vst3`.
+          `xattr -cr ~/Library/Audio/Plug-Ins/VST3/OscTutorialPlugin.vst3`.
           EOF
           gh release create "$GITHUB_REF_NAME" zips/*.zip --title "$PRODUCT $GITHUB_REF_NAME" \
             --notes-file notes.md --generate-notes

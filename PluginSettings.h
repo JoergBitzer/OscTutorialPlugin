@@ -5,7 +5,7 @@ const float g_desired_blocksize_ms(2); // its in ms to be independent from the s
 const bool g_forcePowerOf2(false); // should be true for FFT Processing
 
 // -------------- GUI -----------------
-// global GUI setting for VerySimpleSynth
+// global GUI setting for OscTutorialPlugin
 const int g_minGuiSize_x(880);
 const int g_maxGuiSize_x(1760);
 const int g_minGuiSize_y(660);

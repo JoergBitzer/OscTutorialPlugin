@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <math.h>
-#include "VerySimpleSynth.h"
+#include "OscTutorialPlugin.h"
 
 #include "PluginProcessor.h"
 
@@ -13,7 +13,7 @@ constexpr double kCentPerSemitone = 100.0;
 constexpr float kPercentToFactor = 0.01f;
 } // namespace
 
-VerySimpleSynthAudio::VerySimpleSynthAudio(VerySimpleSynthAudioProcessor* processor)
+OscTutorialPluginAudio::OscTutorialPluginAudio(OscTutorialPluginAudioProcessor* processor)
 :SynchronBlockProcessor(), m_processor(processor)
 {
     m_heldNotes.reserve(kNumMidiNotes); // no allocation in the audio thread
@@ -22,7 +22,7 @@ VerySimpleSynthAudio::VerySimpleSynthAudio(VerySimpleSynthAudioProcessor* proces
                       &m_oversamplingOscillator };
 }
 
-void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBlock, int max_channels)
+void OscTutorialPluginAudio::prepareToPlay(double sampleRate, int max_samplesPerBlock, int max_channels)
 {
     juce::ignoreUnused(max_samplesPerBlock,max_channels);
     int synchronblocksize;
@@ -53,7 +53,7 @@ void VerySimpleSynthAudio::prepareToPlay(double sampleRate, int max_samplesPerBl
     }
 }
 
-int VerySimpleSynthAudio::processSynchronBlock(juce::AudioBuffer<float> & buffer, juce::MidiBuffer &midiMessages, int NrOfBlocksSinceLastProcessBlock)
+int OscTutorialPluginAudio::processSynchronBlock(juce::AudioBuffer<float> & buffer, juce::MidiBuffer &midiMessages, int NrOfBlocksSinceLastProcessBlock)
 {
     juce::ignoreUnused(NrOfBlocksSinceLastProcessBlock);
     updateParameters();
@@ -78,9 +78,9 @@ int VerySimpleSynthAudio::processSynchronBlock(juce::AudioBuffer<float> & buffer
     return 0;
 }
 
-void VerySimpleSynthAudio::addParameter(std::vector<std::unique_ptr<juce::RangedAudioParameter>> &paramVector)
+void OscTutorialPluginAudio::addParameter(std::vector<std::unique_ptr<juce::RangedAudioParameter>> &paramVector)
 {
-    // one line per parameter, made from its definition in VerySimpleSynth.h (see tools/ParameterSpec.h)
+    // one line per parameter, made from its definition in OscTutorialPlugin.h (see tools/ParameterSpec.h)
     paramVector.push_back(jade::makeChoiceParameter(g_paramModel));
     paramVector.push_back(jade::makeChoiceParameter(g_paramWaveform));
     paramVector.push_back(jade::makeParameter(g_paramOctave));
@@ -92,7 +92,7 @@ void VerySimpleSynthAudio::addParameter(std::vector<std::unique_ptr<juce::Ranged
     paramVector.push_back(jade::makeParameter(g_paramLevel));
 }
 
-void VerySimpleSynthAudio::prepareParameter(std::unique_ptr<juce::AudioProcessorValueTreeState> &vts)
+void OscTutorialPluginAudio::prepareParameter(std::unique_ptr<juce::AudioProcessorValueTreeState> &vts)
 {
     m_model = vts->getRawParameterValue(g_paramModel.ID);
     m_waveform = vts->getRawParameterValue(g_paramWaveform.ID);
@@ -105,9 +105,9 @@ void VerySimpleSynthAudio::prepareParameter(std::unique_ptr<juce::AudioProcessor
     m_level = vts->getRawParameterValue(g_paramLevel.ID);
 }
 
-void VerySimpleSynthAudio::updateParameters()
+void OscTutorialPluginAudio::updateParameters()
 {
-    const auto waveform = static_cast<vss::Waveform>(juce::roundToInt(m_waveform->load()));
+    const auto waveform = static_cast<otp::Waveform>(juce::roundToInt(m_waveform->load()));
     m_octaveShift = m_octave->load();
     m_fineTuneCent = m_fineTune->load();
 
@@ -115,7 +115,7 @@ void VerySimpleSynthAudio::updateParameters()
     // phase of the old one (no click; setPhase also sets its inner state to fit)
     int modelIndex = juce::roundToInt(m_model->load());
     modelIndex = juce::jlimit(0, static_cast<int>(m_oscillators.size()) - 1, modelIndex);
-    const auto model = static_cast<vss::OscillatorModel>(modelIndex);
+    const auto model = static_cast<otp::OscillatorModel>(modelIndex);
     if (model != m_activeModel)
     {
         const double phase = m_activeOscillator->getPhase();
@@ -132,7 +132,7 @@ void VerySimpleSynthAudio::updateParameters()
     m_levelGain.setTargetValue(juce::Decibels::decibelsToGain(m_level->load()));
 }
 
-void VerySimpleSynthAudio::handleMidiMessage(const juce::MidiMessage& message)
+void OscTutorialPluginAudio::handleMidiMessage(const juce::MidiMessage& message)
 {
     if (message.isNoteOn())
     {
@@ -155,7 +155,7 @@ void VerySimpleSynthAudio::handleMidiMessage(const juce::MidiMessage& message)
     }
 }
 
-void VerySimpleSynthAudio::noteOn(int note, float velocity)
+void OscTutorialPluginAudio::noteOn(int note, float velocity)
 {
     // a key that is pressed again moves to the end of the list
     m_heldNotes.erase(std::remove(m_heldNotes.begin(), m_heldNotes.end(), note), m_heldNotes.end());
@@ -180,7 +180,7 @@ void VerySimpleSynthAudio::noteOn(int note, float velocity)
     m_envelope.noteOn(); // starts from the current level: no click
 }
 
-void VerySimpleSynthAudio::noteOff(int note)
+void OscTutorialPluginAudio::noteOff(int note)
 {
     m_heldNotes.erase(std::remove(m_heldNotes.begin(), m_heldNotes.end(), note), m_heldNotes.end());
     if (note != m_currentNote)
@@ -197,13 +197,13 @@ void VerySimpleSynthAudio::noteOff(int note)
     updateFrequency();
 }
 
-void VerySimpleSynthAudio::allNotesOff()
+void OscTutorialPluginAudio::allNotesOff()
 {
     m_heldNotes.clear();
     m_envelope.noteOff();
 }
 
-void VerySimpleSynthAudio::updateFrequency()
+void OscTutorialPluginAudio::updateFrequency()
 {
     if (m_currentNote == kNoNote)
     {
@@ -215,7 +215,7 @@ void VerySimpleSynthAudio::updateFrequency()
     m_activeOscillator->setFrequency(frequency);
 }
 
-void VerySimpleSynthAudio::render(juce::AudioBuffer<float>& buffer, int startSample, int endSample)
+void OscTutorialPluginAudio::render(juce::AudioBuffer<float>& buffer, int startSample, int endSample)
 {
     float* out = buffer.getWritePointer(0);
     for (int n = startSample; n < endSample; ++n)
@@ -237,7 +237,7 @@ void VerySimpleSynthAudio::render(juce::AudioBuffer<float>& buffer, int startSam
 }
 
 
-VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
+OscTutorialPluginGUI::OscTutorialPluginGUI(OscTutorialPluginAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts)
 :m_processor(p) ,m_apvts(apvts), m_oscilloscope(p.m_algo.getScope(), apvts), m_spectrum(p.m_algo.getSpectrum())
 {
     m_oscillatorGroup.setText("Oscillator");
@@ -274,14 +274,14 @@ VerySimpleSynthGUI::VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::A
     m_spectrumPage.setTooltip("The spectrum of the oscillator: aliasing shows up between the harmonics");
 }
 
-void VerySimpleSynthGUI::showPage(bool showSpectrum)
+void OscTutorialPluginGUI::showPage(bool showSpectrum)
 {
     m_oscilloscope.setVisible(!showSpectrum);
     m_spectrum.setVisible(showSpectrum);
 }
 
 template <class Spec>
-void VerySimpleSynthGUI::setupKnob(Knob& knob, const Spec& spec)
+void OscTutorialPluginGUI::setupKnob(Knob& knob, const Spec& spec)
 {
     knob.slider.setSliderStyle(juce::Slider::RotaryHorizontalVerticalDrag);
     knob.slider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 1, 1); // the real size is set in placeKnob()
@@ -295,7 +295,7 @@ void VerySimpleSynthGUI::setupKnob(Knob& knob, const Spec& spec)
 }
 
 template <class Spec>
-void VerySimpleSynthGUI::setupChoice(Choice& choice, const Spec& spec)
+void OscTutorialPluginGUI::setupChoice(Choice& choice, const Spec& spec)
 {
     // the entries first, then the attachment (it selects the entry of the current value)
     choice.comboBox.addItemList(jade::choiceNames(spec), 1);
@@ -307,12 +307,12 @@ void VerySimpleSynthGUI::setupChoice(Choice& choice, const Spec& spec)
     addAndMakeVisible(choice.label);
 }
 
-float VerySimpleSynthGUI::scaleFactor() const
+float OscTutorialPluginGUI::scaleFactor() const
 {
     return static_cast<float>(getWidth()) / g_minGuiSize_x;
 }
 
-void VerySimpleSynthGUI::paint(juce::Graphics &g)
+void OscTutorialPluginGUI::paint(juce::Graphics &g)
 {
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId).brighter(0.3f));
 
@@ -322,14 +322,14 @@ void VerySimpleSynthGUI::paint(juce::Graphics &g)
     const float scale = scaleFactor();
     g.setFont (g_versionFontSize * scale);
     
-    juce::String text2display = "VerySimpleSynth V " + juce::String(PLUGIN_VERSION_MAJOR) + "." + juce::String(PLUGIN_VERSION_MINOR) + "." + juce::String(PLUGIN_VERSION_PATCH);
+    juce::String text2display = "OscTutorialPlugin V " + juce::String(PLUGIN_VERSION_MAJOR) + "." + juce::String(PLUGIN_VERSION_MINOR) + "." + juce::String(PLUGIN_VERSION_PATCH);
     // in the strip below the oscilloscope (see resized())
     auto versionArea = getLocalBounds().removeFromBottom(static_cast<int>(g_versionHeight * scale));
     versionArea.removeFromRight(static_cast<int>(g_guiMargin * scale));
     g.drawFittedText (text2display, versionArea, juce::Justification::centredRight, 1);
 }
 
-void VerySimpleSynthGUI::placeKnob(Knob& knob, juce::Rectangle<int> area)
+void OscTutorialPluginGUI::placeKnob(Knob& knob, juce::Rectangle<int> area)
 {
     const float scale = scaleFactor();
     const int labelHeight = static_cast<int>(g_labelHeight * scale);
@@ -339,7 +339,7 @@ void VerySimpleSynthGUI::placeKnob(Knob& knob, juce::Rectangle<int> area)
     knob.slider.setBounds(area);
 }
 
-void VerySimpleSynthGUI::placeChoice(Choice& choice, juce::Rectangle<int>& area)
+void OscTutorialPluginGUI::placeChoice(Choice& choice, juce::Rectangle<int>& area)
 {
     const float scale = scaleFactor();
     choice.label.setFont(juce::FontOptions(g_labelFontSize * scale));
@@ -347,7 +347,7 @@ void VerySimpleSynthGUI::placeChoice(Choice& choice, juce::Rectangle<int>& area)
     choice.comboBox.setBounds(area.removeFromTop(static_cast<int>(g_choiceHeight * scale)));
 }
 
-void VerySimpleSynthGUI::resized()
+void OscTutorialPluginGUI::resized()
 {
 	auto r = getLocalBounds();
     const float scale = scaleFactor();

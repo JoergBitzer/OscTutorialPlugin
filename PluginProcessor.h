@@ -3,16 +3,16 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "tools/MidiModPitchState.h"
 #include "tools/PresetHandler.h"
-#include "VerySimpleSynth.h"
+#include "OscTutorialPlugin.h"
 
 //==============================================================================
-class VerySimpleSynthAudioProcessor  : public juce::AudioProcessor
+class OscTutorialPluginAudioProcessor  : public juce::AudioProcessor
 {
 public:
-    friend class VerySimpleSynthAudioProcessorEditor;
+    friend class OscTutorialPluginAudioProcessorEditor;
     //==============================================================================
-    VerySimpleSynthAudioProcessor();
-    ~VerySimpleSynthAudioProcessor() override;
+    OscTutorialPluginAudioProcessor();
+    ~OscTutorialPluginAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -53,7 +53,7 @@ public:
     void setScaleFactor(float newscalefactor){m_pluginScaleFactor = newscalefactor;};
     
     // Algo component and ValueTreeState must be public to be accessed by the editor
-    VerySimpleSynthAudio m_algo;
+    OscTutorialPluginAudio m_algo;
     std::unique_ptr<AudioProcessorValueTreeState> m_parameterVTS;
 private:
     CriticalSection m_protect;
@@ -69,5 +69,5 @@ private:
 #endif
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VerySimpleSynthAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (OscTutorialPluginAudioProcessor)
 };

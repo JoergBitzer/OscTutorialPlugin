@@ -16,7 +16,7 @@
 #include <vector>
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class OversamplingOscillator : public Oscillator
 {
@@ -43,4 +43,4 @@ private:
     std::vector<double> m_history;
     int m_writeIndex = 0;
 };
-} // namespace vss
+} // namespace otp

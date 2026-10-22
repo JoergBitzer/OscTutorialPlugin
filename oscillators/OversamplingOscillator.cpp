@@ -1,7 +1,7 @@
 #include <cmath>
 #include "OversamplingOscillator.h"
 
-namespace vss
+namespace otp
 {
 OversamplingOscillator::OversamplingOscillator()
 {
@@ -73,4 +73,4 @@ float OversamplingOscillator::processSample()
     advancePhase();
     return static_cast<float>(out);
 }
-} // namespace vss
+} // namespace otp

@@ -1,6 +1,6 @@
 #include "Oscilloscope.h"
 #include "PluginSettings.h"
-#include "VerySimpleSynth.h"
+#include "OscTutorialPlugin.h"
 #include "oscillators/Oscillator.h"
 
 namespace
@@ -142,7 +142,7 @@ void Oscilloscope::paintGrid(juce::Graphics& g, juce::Rectangle<float> area, int
 
 void Oscilloscope::paintIdeal(juce::Graphics& g, juce::Rectangle<float> area, int cycles)
 {
-    const auto waveform = static_cast<vss::Waveform>(
+    const auto waveform = static_cast<otp::Waveform>(
         juce::roundToInt(m_apvts.getRawParameterValue(g_paramWaveform.ID)->load()));
     const float centreY = area.getCentreY();
     const float unitHeight = 0.5f * area.getHeight() / kValueRange;
@@ -152,7 +152,7 @@ void Oscilloscope::paintIdeal(juce::Graphics& g, juce::Rectangle<float> area, in
     {
         const double position = static_cast<double>(cycles) * i / numPoints; // in periods
         const float x = area.getX() + area.getWidth() * static_cast<float>(position / cycles);
-        const float y = centreY - static_cast<float>(vss::naiveWaveform(waveform, position)) * unitHeight;
+        const float y = centreY - static_cast<float>(otp::naiveWaveform(waveform, position)) * unitHeight;
         if (i == 0)
         {
             path.startNewSubPath(x, y);

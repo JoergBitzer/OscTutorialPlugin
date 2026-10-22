@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-measure_models.py -- measures all oscillator models of VerySimpleSynth (needs numpy).
+measure_models.py -- measures all oscillator models of OscTutorialPlugin (needs numpy).
 
 Renders one note per model and waveform with the Tester (build it with -DAAT_BUILD_TESTER=ON) and prints
   - alias: energy that is not at a harmonic of f0 (or DC), relative to the total energy (dB, lower = better)
   - max:   the largest value (overshoot of the Gibbs phenomenon: about 1.09 at a jump)
   - corr:  correlation with the wavetable output (1 = same shape and phase)
 
-Usage:  tools/analysis/measure_models.py <path/to/VerySimpleSynth_Tester> [note ...]   (default notes 60 96)
+Usage:  tools/analysis/measure_models.py <path/to/OscTutorialPlugin_Tester> [note ...]   (default notes 60 96)
 The Tester runs with a temporary HOME (your presets stay untouched).
 """
 import os

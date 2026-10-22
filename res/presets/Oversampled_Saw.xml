@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<VerySimpleSynthVTS presetname="Oversampled Saw" category="Unknown" bank="Factory" presetversion="3">
+<OscTutorialPluginVTS presetname="Oversampled Saw" category="Unknown" bank="Factory" presetversion="3">
   <PARAM id="Model" value="8.0"/>
   <PARAM id="Waveform" value="3.0"/>
   <PARAM id="Octave" value="0.0"/>
@@ -10,4 +10,4 @@
   <PARAM id="Sustain" value="70.0"/>
   <PARAM id="Release" value="300.0"/>
   <PARAM id="Level" value="-12.0"/>
-</VerySimpleSynthVTS>
+</OscTutorialPluginVTS>

@@ -2,7 +2,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-VerySimpleSynthAudioProcessor::VerySimpleSynthAudioProcessor()
+OscTutorialPluginAudioProcessor::OscTutorialPluginAudioProcessor()
      : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
@@ -15,7 +15,7 @@ VerySimpleSynthAudioProcessor::VerySimpleSynthAudioProcessor()
 
     m_algo.addParameter(m_paramVector);
 
-    m_parameterVTS = std::make_unique<AudioProcessorValueTreeState>(*this, nullptr, Identifier("VerySimpleSynthVTS"),
+    m_parameterVTS = std::make_unique<AudioProcessorValueTreeState>(*this, nullptr, Identifier("OscTutorialPluginVTS"),
         AudioProcessorValueTreeState::ParameterLayout(m_paramVector.begin(), m_paramVector.end()));
 
     m_algo.prepareParameter(m_parameterVTS);
@@ -33,18 +33,18 @@ VerySimpleSynthAudioProcessor::VerySimpleSynthAudioProcessor()
     setLatencySamples(m_algo.getLatency());
 }
 
-VerySimpleSynthAudioProcessor::~VerySimpleSynthAudioProcessor()
+OscTutorialPluginAudioProcessor::~OscTutorialPluginAudioProcessor()
 {
 
 }
 
 //==============================================================================
-const juce::String VerySimpleSynthAudioProcessor::getName() const
+const juce::String OscTutorialPluginAudioProcessor::getName() const
 {
     return JucePlugin_Name;
 }
 
-bool VerySimpleSynthAudioProcessor::acceptsMidi() const
+bool OscTutorialPluginAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -53,7 +53,7 @@ bool VerySimpleSynthAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool VerySimpleSynthAudioProcessor::producesMidi() const
+bool OscTutorialPluginAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -62,7 +62,7 @@ bool VerySimpleSynthAudioProcessor::producesMidi() const
    #endif
 }
 
-bool VerySimpleSynthAudioProcessor::isMidiEffect() const
+bool OscTutorialPluginAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -72,41 +72,41 @@ bool VerySimpleSynthAudioProcessor::isMidiEffect() const
 }
 
 
-double VerySimpleSynthAudioProcessor::getTailLengthSeconds() const
+double OscTutorialPluginAudioProcessor::getTailLengthSeconds() const
 {
 
     return 0.0;
 }
 
-int VerySimpleSynthAudioProcessor::getNumPrograms()
+int OscTutorialPluginAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int VerySimpleSynthAudioProcessor::getCurrentProgram()
+int OscTutorialPluginAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void VerySimpleSynthAudioProcessor::setCurrentProgram (int index)
+void OscTutorialPluginAudioProcessor::setCurrentProgram (int index)
 {
     juce::ignoreUnused (index);
 }
 
-const juce::String VerySimpleSynthAudioProcessor::getProgramName (int index)
+const juce::String OscTutorialPluginAudioProcessor::getProgramName (int index)
 {
     juce::ignoreUnused (index);
     return "Default"; // pluginval 2.x (VST3 validator) rejects a program without a name
 }
 
-void VerySimpleSynthAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void OscTutorialPluginAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
     juce::ignoreUnused (index, newName);
 }
 
 //==============================================================================
-void VerySimpleSynthAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void OscTutorialPluginAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
@@ -122,13 +122,13 @@ void VerySimpleSynthAudioProcessor::prepareToPlay (double sampleRate, int sample
     setLatencySamples(m_algo.getLatency()); // known only now (the synchronous block size depends on the sample rate)
 }
 
-void VerySimpleSynthAudioProcessor::releaseResources()
+void OscTutorialPluginAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
-bool VerySimpleSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool OscTutorialPluginAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -150,7 +150,7 @@ bool VerySimpleSynthAudioProcessor::isBusesLayoutSupported (const BusesLayout& l
   #endif
 }
 
-void VerySimpleSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
+void OscTutorialPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
  #if WITH_MIDIKEYBOARD  
@@ -188,7 +188,7 @@ void VerySimpleSynthAudioProcessor::processBlock (juce::AudioBuffer<float>& buff
 #endif
 }
 
-void VerySimpleSynthAudioProcessor::processBlockBypassed (juce::AudioBuffer<float>& buffer,
+void OscTutorialPluginAudioProcessor::processBlockBypassed (juce::AudioBuffer<float>& buffer,
                                                           juce::MidiBuffer& midiMessages)
 {
     // JUCE's default asserts if the plugin reports a latency (an effect would have to delay its input
@@ -198,18 +198,18 @@ void VerySimpleSynthAudioProcessor::processBlockBypassed (juce::AudioBuffer<floa
 }
 
 //==============================================================================
-bool VerySimpleSynthAudioProcessor::hasEditor() const
+bool OscTutorialPluginAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* VerySimpleSynthAudioProcessor::createEditor()
+juce::AudioProcessorEditor* OscTutorialPluginAudioProcessor::createEditor()
 {
-    return new VerySimpleSynthAudioProcessorEditor (*this);
+    return new OscTutorialPluginAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void VerySimpleSynthAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void OscTutorialPluginAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     // You should use this method to store your parameters in the memory block.
     // You could do that either as raw data, or use the XML or ValueTree classes
@@ -225,7 +225,7 @@ void VerySimpleSynthAudioProcessor::getStateInformation (juce::MemoryBlock& dest
 
 }
 
-void VerySimpleSynthAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void OscTutorialPluginAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // You should use this method to restore your parameters from this memory block,
     // whose contents will have been created by the getStateInformation() call.
@@ -255,5 +255,5 @@ void VerySimpleSynthAudioProcessor::setStateInformation (const void* data, int s
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new VerySimpleSynthAudioProcessor();
+    return new OscTutorialPluginAudioProcessor();
 }

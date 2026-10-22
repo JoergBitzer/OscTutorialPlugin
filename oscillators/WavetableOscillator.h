@@ -16,7 +16,7 @@
 #include <vector>
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class WavetableOscillator : public Oscillator
 {
@@ -44,4 +44,4 @@ private:
     double m_tablesSampleRate = 0.0; // the tables are only built again if the sample rate changes
     int m_tableIndex = 0;
 };
-} // namespace vss
+} // namespace otp

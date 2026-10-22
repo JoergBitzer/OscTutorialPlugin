@@ -9,7 +9,7 @@ constexpr double kThreeQuarterPeriod = 0.75;
 constexpr double kMinPhaseIncrement = 1e-9; // below: no division by dt, use the naive value
 } // namespace
 
-namespace vss
+namespace otp
 {
 double DpwOscillator::antiderivative(Waveform waveform, double phase)
 {
@@ -62,4 +62,4 @@ float DpwOscillator::processSample()
     advancePhase();
     return static_cast<float>(out);
 }
-} // namespace vss
+} // namespace otp

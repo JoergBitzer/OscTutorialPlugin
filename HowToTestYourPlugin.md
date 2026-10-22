@@ -19,13 +19,13 @@ more. It finds bugs that you would otherwise only notice in a DAW, or that your 
 
 Linux/macOS:
 ```console
-tools/run_pluginval.sh path/to/VerySimpleSynth.vst3
+tools/run_pluginval.sh path/to/OscTutorialPlugin.vst3
 ```
 Windows (PowerShell):
 ```console
-powershell -ExecutionPolicy Bypass -File tools\run_pluginval.ps1 path\to\VerySimpleSynth.vst3
+powershell -ExecutionPolicy Bypass -File tools\run_pluginval.ps1 path\to\OscTutorialPlugin.vst3
 ```
-In AudioDev the plugin is in `build/VerySimpleSynth/VerySimpleSynth_artefacts/Debug/VST3/`.
+In AudioDev the plugin is in `build/OscTutorialPlugin/OscTutorialPlugin_artefacts/Debug/VST3/`.
 
 The script downloads pluginval on the first run, tests at the highest strictness level (10) three times
 (some bugs only show up now and then; give another number as second argument) and prints SUCCESS or
@@ -82,25 +82,25 @@ releasing -- a quick way to test on systems you do not have.
 
 ## 5. The Tester: render audio and take GUI snapshots
 
-`VerySimpleSynth_Tester` is a small console program built from your plugin code. It is not built
+`OscTutorialPlugin_Tester` is a small console program built from your plugin code. It is not built
 by default; switch it on when you configure:
 ```console
 cmake -S . -B build -DAAT_BUILD_TESTER=ON
-cmake --build build --target VerySimpleSynth_Tester
+cmake --build build --target OscTutorialPlugin_Tester
 ```
 It creates the plugin the same way a DAW does (`createPluginFilter()`), so it needs no changes
 for your plugin.
 
-**Parameters:** `VerySimpleSynth_Tester --list` prints all parameter IDs with range and default.
+**Parameters:** `OscTutorialPlugin_Tester --list` prints all parameter IDs with range and default.
 
-**List of controls for the manual:** `VerySimpleSynth_Tester --manual md` (Markdown, e.g. for the
+**List of controls for the manual:** `OscTutorialPlugin_Tester --manual md` (Markdown, e.g. for the
 README) or `--manual tex` (a LaTeX table) prints all controls with range and default, as the plugin
 shows them, and the `help` line of each parameter definition (see tools/ParameterSpec.h). So the
 list in your manual comes from the code and stays correct when you change a parameter.
 
 **Render** a wav file through the plugin (the result is a 32-bit float wav):
 ```console
-VerySimpleSynth_Tester render in.wav out.wav --set ExampleID=1.5 --preset mypreset.xml
+OscTutorialPlugin_Tester render in.wav out.wav --set ExampleID=1.5 --preset mypreset.xml
 ```
 Uses: listen to a setting without a DAW; check that a code change did not change the sound
 (render before and after, then compare the files -- identical files mean identical sound); feed
@@ -109,16 +109,16 @@ latency (the template's internal block processing delays by 2 ms).
 
 **Snapshot** of the plugin window as a PNG:
 ```console
-VerySimpleSynth_Tester snapshot gui.png --preset mypreset.xml --audio in.wav --seconds 2
+OscTutorialPlugin_Tester snapshot gui.png --preset mypreset.xml --audio in.wav --seconds 2
 ```
 With `--audio`, the file is played through the plugin first, so meters and displays show a
 signal. Uses: screenshots for the README and the manual; a quick look at the GUI after a change
 (also on a machine without a DAW). On Linux run it in a virtual display, so that nothing appears on your desktop:
-`tools/with_virtual_display.sh VerySimpleSynth_Tester snapshot gui.png ...` (Xvfb with the small window manager openbox; the Tester's
+`tools/with_virtual_display.sh OscTutorialPlugin_Tester snapshot gui.png ...` (Xvfb with the small window manager openbox; the Tester's
 window needs a window manager, otherwise JUCE ends with an X error "BadAtom").
 
 Options for both: `--preset <file.xml>` (a preset saved by the preset handler), `--set <id>=<value>`
 (repeatable, value in the parameter's own unit), `--blocksize <n>` (default 512).
 
 Like in a DAW, the plugin uses your preset folder and settings. On Linux/macOS you can keep them
-untouched with a temporary home folder: `HOME=$(mktemp -d) VerySimpleSynth_Tester ...`
+untouched with a temporary home folder: `HOME=$(mktemp -d) OscTutorialPlugin_Tester ...`

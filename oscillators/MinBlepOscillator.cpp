@@ -38,7 +38,7 @@ void fft(std::vector<Complex>& data, bool inverse)
     }
     for (size_t length = 2; length <= n; length <<= 1)
     {
-        const double angle = sign * vss::kTwoPi / static_cast<double>(length);
+        const double angle = sign * otp::kTwoPi / static_cast<double>(length);
         const Complex step(std::cos(angle), std::sin(angle));
         for (size_t start = 0; start < n; start += length)
         {
@@ -66,7 +66,7 @@ void inverseFft(std::vector<Complex>& data)
 }
 } // namespace
 
-namespace vss
+namespace otp
 {
 MinBlepOscillator::MinBlepOscillator()
 {
@@ -207,4 +207,4 @@ float MinBlepOscillator::processSample()
     advancePhase();
     return static_cast<float>(value);
 }
-} // namespace vss
+} // namespace otp

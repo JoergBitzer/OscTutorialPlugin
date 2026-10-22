@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<VerySimpleSynthVTS presetname="Aliasing Demo" category="Unknown" bank="Factory" presetversion="3">
+<OscTutorialPluginVTS presetname="Aliasing Demo" category="Unknown" bank="Factory" presetversion="3">
   <PARAM id="Model" value="0.0"/>
   <PARAM id="Waveform" value="2.0"/>
   <PARAM id="Octave" value="2.0"/>
@@ -10,4 +10,4 @@
   <PARAM id="Sustain" value="100.0"/>
   <PARAM id="Release" value="200.0"/>
   <PARAM id="Level" value="-18.0"/>
-</VerySimpleSynthVTS>
+</OscTutorialPluginVTS>

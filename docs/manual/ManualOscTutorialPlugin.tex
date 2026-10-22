@@ -1,7 +1,7 @@
-% Manual and tutorial of VerySimpleSynth (made from the AAT2 manual template, see docs/HowToDoc.md)
-% Build (in docs/manual):  pdflatex ManualVerySimpleSynth.tex   (twice, for the references)
+% Manual and tutorial of OscTutorialPlugin (made from the AAT2 manual template, see docs/HowToDoc.md)
+% Build (in docs/manual):  pdflatex ManualOscTutorialPlugin.tex   (twice, for the references)
 % The PDF is copied into the release zips by the GitHub workflow.
-% Figures: images/*.png, made with VerySimpleSynth_Tester snapshot (see planning.md); measurements:
+% Figures: images/*.png, made with OscTutorialPlugin_Tester snapshot (see planning.md); measurements:
 % tools/analysis/measure_models.py
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -13,12 +13,12 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{hyperref}
-\hypersetup{colorlinks=true, linkcolor=red, urlcolor=red, citecolor=red, pdftitle={VerySimpleSynth Documentation}}
+\hypersetup{colorlinks=true, linkcolor=red, urlcolor=red, citecolor=red, pdftitle={OscTutorialPlugin Documentation}}
 
 % ---- change these ------------------------------------------------------------
-\newcommand{\pluginversion}{1.0.0}   % the version in CMakeLists.txt
+\newcommand{\pluginversion}{1.0.1}   % the version in CMakeLists.txt
 \newcommand{\pluginauthor}{Joerg Bitzer}
-\newcommand{\sourceurl}{https://github.com/JoergBitzer/VerySimpleSynth}
+\newcommand{\sourceurl}{https://github.com/JoergBitzer/OscTutorialPlugin}
 % -------------------------------------------------------------------------------
 
 % two figures side by side: oscilloscope and spectrum of one model
@@ -29,9 +29,9 @@
 {\small #2: sawtooth at C7 (2093\,Hz, 22.9 samples per period, 48\,kHz). Left: oscilloscope, right: spectrum.}
 \end{center}}
 
-\title{VerySimpleSynth\\[1ex]\large Manual and tutorial: nine ways to make a sawtooth}
+\title{OscTutorialPlugin\\[1ex]\large Manual and tutorial: nine ways to make a sawtooth}
 \author{\pluginauthor, Jade Hochschule Oldenburg\\License of this document: CC-BY 4.0}
-\date{\today, for VerySimpleSynth \pluginversion}
+\date{\today, for OscTutorialPlugin \pluginversion}
 
 \begin{document}
 \maketitle
@@ -39,12 +39,14 @@
 \tableofcontents
 
 \section{Introduction}
-VerySimpleSynth is a deliberately small synthesizer for teaching: one oscillator, one ADSR envelope,
+OscTutorialPlugin is a deliberately small synthesizer for teaching: one oscillator, one ADSR envelope,
 monophonic. Its point is the \emph{oscillator model}: the same four waveforms (sine, triangle,
 rectangle, sawtooth) can be made in nine different ways, from the naive one that every beginner
 writes first, to band-limited tables, polynomial corrections and oversampling. You can switch
 between them while a note sounds, and you can \emph{hear} the difference, \emph{see} it on the
 built-in oscilloscope and spectrum and \emph{measure} it (section~\ref{sec:measure}).
+
+(Until version 1.0.0 the plug-in was called VerySimpleSynth.)
 
 Section~\ref{sec:tutorial} is a tutorial: why the naive oscillator aliases, how each method fights
 that, and what it costs. Section~\ref{sec:exercises} has exercises for a lab session.
@@ -68,15 +70,15 @@ play with the on-screen keyboard or a MIDI keyboard.
 
 The macOS version is not signed with an Apple Developer ID. If macOS reports that the plug-in
 is damaged or cannot be opened, remove the quarantine flag in the Terminal, e.g.
-\texttt{xattr -cr \textasciitilde/Library/Audio/Plug-Ins/VST3/VerySimpleSynth.vst3}.
+\texttt{xattr -cr \textasciitilde/Library/Audio/Plug-Ins/VST3/OscTutorialPlugin.vst3}.
 
 \subsection{Presets and settings}
 The presets (plain XML files) and the settings file (\texttt{user.settings}: day/night theme)
-are stored in this folder -- delete it to remove VerySimpleSynth completely:
+are stored in this folder -- delete it to remove OscTutorialPlugin completely:
 \begin{verbatim}
-Windows: C:\Users\yourUSERNAME\AppData\Roaming\Jade_Hochschule\VerySimpleSynth
-Mac:     /Users/yourUSERNAME/Library/Audio/Presets/Jade_Hochschule/VerySimpleSynth
-Linux:   /home/yourUSERNAME/.config/Jade_Hochschule/VerySimpleSynth
+Windows: C:\Users\yourUSERNAME\AppData\Roaming\Jade_Hochschule\OscTutorialPlugin
+Mac:     /Users/yourUSERNAME/Library/Audio/Presets/Jade_Hochschule/OscTutorialPlugin
+Linux:   /home/yourUSERNAME/.config/Jade_Hochschule/OscTutorialPlugin
 \end{verbatim}
 
 \section{How to use}
@@ -114,7 +116,7 @@ description as a tooltip.
 
 \begin{center}
 \small
-% generated from the code: VerySimpleSynth_Tester --manual tex > controls.tex (see docs/HowToDoc.md)
+% generated from the code: OscTutorialPlugin_Tester --manual tex > controls.tex (see docs/HowToDoc.md)
 \input{controls}
 \end{center}
 
@@ -376,7 +378,7 @@ and rise), so the model can be switched while a note sounds; the new model conti
 the old one.
 
 \section{Source code}
-VerySimpleSynth is open source. You find the source code here:\newline
+OscTutorialPlugin is open source. You find the source code here:\newline
 \url{\sourceurl}. Please report bugs there, too. Start reading with \texttt{oscillators/Oscillator.h};
 each model has its own file. \texttt{planning.md} documents the decisions, the measurements and ideas
 how to go on.

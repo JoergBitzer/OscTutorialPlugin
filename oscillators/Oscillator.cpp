@@ -12,7 +12,7 @@ constexpr double kTriangleSlope = 4.0;
 constexpr double kSawtoothSlope = 2.0;
 } // namespace
 
-namespace vss
+namespace otp
 {
 double wrapPhase(double phase)
 {
@@ -176,4 +176,4 @@ float NaiveOscillator::processSample()
     advancePhase();
     return static_cast<float>(out);
 }
-} // namespace vss
+} // namespace otp

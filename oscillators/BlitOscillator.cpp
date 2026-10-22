@@ -11,7 +11,7 @@ constexpr double kTriangleSlope = 4.0;  // per period
 constexpr double kTinySine = 1e-9;      // below: use the limit of sin(pi M x) / sin(pi x)
 } // namespace
 
-namespace vss
+namespace otp
 {
 void BlitOscillator::prepare(double sampleRate)
 {
@@ -99,4 +99,4 @@ float BlitOscillator::processSample()
     advancePhase();
     return static_cast<float>(out);
 }
-} // namespace vss
+} // namespace otp

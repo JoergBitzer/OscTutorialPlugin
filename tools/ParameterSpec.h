@@ -2,7 +2,7 @@
     ParameterSpec.h
     Author: J. Bitzer @ TGM, Jade Hochschule
     Date: 2026-09-30
-    Description: helpers for the parameter definitions in VerySimpleSynth.h. Each parameter is
+    Description: helpers for the parameter definitions in OscTutorialPlugin.h. Each parameter is
     defined once, in a struct like g_paramExample:
 
         const struct

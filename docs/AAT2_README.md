@@ -17,8 +17,8 @@ YourDevDir
         PluginProcessor.cpp
         PluginProcessor.h
         PluginSettings.h
-        VerySimpleSynth.cpp (keep this name for the file, it will be renamed later)
-        VerySimpleSynth.h (keep this name for the file, it will be renamed later)
+        OscTutorialPlugin.cpp (keep this name for the file, it will be renamed later)
+        OscTutorialPlugin.h (keep this name for the file, it will be renamed later)
 
 ## Purpose
 This template provides some basic features for effects and synth, like:
@@ -28,7 +28,7 @@ This template provides some basic features for effects and synth, like:
 * saving/loading of plugin state (with GUI size) 
 * keyboard  + pitch-wheel and modulation-wheel (midi insert and display)  
 * Access to Version Number given in CMakeLists.txt
-* a template plugin cpp and h for easy start (named VerySimpleSynth.cpp and h). 
+* a template plugin cpp and h for easy start (named OscTutorialPlugin.cpp and h). 
 
 ## History / Versioning
 V1.0 basic usage is possible
@@ -61,30 +61,30 @@ The template contains two license files:
 1. Create a new directory (better create a new repository in GitHub)
 2. (if Github): Checkout your new project
 3. copy template files (https://github.com/JoergBitzer/AdvancedAudioTemplate)
-4. rename all instances of "VerySimpleSynth" in the Files with something appropriate 
+4. rename all instances of "OscTutorialPlugin" in the Files with something appropriate 
     (use a renaming-tool like   
 ```console    
-    sed -i 's/VerySimpleSynth/YourNewProjectName/g' *.*
+    sed -i 's/OscTutorialPlugin/YourNewProjectName/g' *.*
 ```    
 for MacOS (https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux)
 for Windows: (https://stackoverflow.com/questions/17144355/how-can-i-replace-every-occurrence-of-a-string-in-a-file-with-powershell)  
 
 ```console    
  Get-ChildItem '*.*' -Recurse | ForEach {
-      (Get-Content $_ | ForEach  { $_ -replace 'VerySimpleSynth', 'YourNewProjectName' }) |
+      (Get-Content $_ | ForEach  { $_ -replace 'OscTutorialPlugin', 'YourNewProjectName' }) |
       Set-Content $_ }
 ```    
 or start the windows subsystem for linux
 
 or use the tools given by visual studio code (Crtl + Shift + H (replace in files)) and use your new diretory./YOUR_PLuggIn_Folder as a filter in "files to include".
 
-5. Rename VerySimpleSynth.cpp and VerySimpleSynth.h into YourNewProjectName.cpp and YourNewProjectName.h (e.g. Linux: 
+5. Rename OscTutorialPlugin.cpp and OscTutorialPlugin.h into YourNewProjectName.cpp and YourNewProjectName.h (e.g. Linux: 
 ```console    
-    rename 's/VerySimpleSynth/YourNewProjectName/' *.*     
+    rename 's/OscTutorialPlugin/YourNewProjectName/' *.*     
 ```    
 and Windows (cmd, not PS)
 ```console    
-ren VerySimpleSynth.* YourNewProjectName.*
+ren OscTutorialPlugin.* YourNewProjectName.*
 ```    
 
 6. Add your new subdiretory to the main CMakeLists.txt (in main directory YourDevDir (e.g. AudioDev)) file
@@ -123,11 +123,11 @@ rsync -a --exclude .git --exclude JUCE --exclude .gitmodules aat2/ YourNewReposi
 git submodule add https://github.com/juce-framework/JUCE.git JUCE
 git -C JUCE checkout 9.0.3
 ```
-4. Rename "VerySimpleSynth" in **all** files, also in the subfolders `.github`, `release` and `docs`
+4. Rename "OscTutorialPlugin" in **all** files, also in the subfolders `.github`, `release` and `docs`
    (the command in "Usage" only covers the main folder), then rename the three files:
 ```console
-grep -rl VerySimpleSynth --exclude-dir=.git --exclude-dir=JUCE . | xargs sed -i 's/VerySimpleSynth/YourNewProjectName/g'
-rename 's/VerySimpleSynth/YourNewProjectName/' *.* docs/manual/*.*
+grep -rl OscTutorialPlugin --exclude-dir=.git --exclude-dir=JUCE . | xargs sed -i 's/OscTutorialPlugin/YourNewProjectName/g'
+rename 's/OscTutorialPlugin/YourNewProjectName/' *.* docs/manual/*.*
 ```
    Also set `PLUGIN_CODE` (unique for every plugin) and `COMPANY_NAME` in CMakeLists.txt, and
    "YourName" / "YourGitHubName" in `release/ReadMeFirst.txt`, `LICENSE` and the manual
@@ -167,12 +167,12 @@ See [HowToTestYourPlugin.md](HowToTestYourPlugin.md): Debug build, the pluginval
 In this file you can set the block size of your internal synchronous (fixed size) data processor.
 Furthermore all global graphic adjustments are defined here.
 
-### VerySimpleSynth.cpp and .h
+### OscTutorialPlugin.cpp and .h
 
 After renaming the file you use these two files to implement the algorithm and the GUI. Always start with the definition of the parameters.
 
 ### Parameters: define each one once (tools/ParameterSpec.h)
-Each parameter is defined once, as a struct in VerySimpleSynth.h (see `g_paramExample`): ID, name, unit,
+Each parameter is defined once, as a struct in OscTutorialPlugin.h (see `g_paramExample`): ID, name, unit,
 range, default, number of decimal places, `logFrequency` (logarithmic range for frequencies) and a one-line
 `help` text. Everything else is made from it:
 * `paramVector.push_back(jade::makeParameter(g_paramExample));` in `addParameter()` creates the parameter.
@@ -209,7 +209,7 @@ The colours and the knob are defined in `tools/DayNightLookAndFeel.cpp`.
 
 ## GUI rules
 * Take colours from the LookAndFeel, e.g. `g.setColour(getLookAndFeel().findColour(juce::Label::textColourId))`
-  (see `VerySimpleSynthGUI::paint()`), not fixed ones like `juce::Colour(0xffffffff)`. Then your GUI follows the
+  (see `OscTutorialPluginGUI::paint()`), not fixed ones like `juce::Colour(0xffffffff)`. Then your GUI follows the
   day/night theme and any other LookAndFeel.
 * Where you need a fixed colour (e.g. in your own LookAndFeel), write it as 8-digit hex,
   `juce::Colour(0xffd01818)`, not as floats (`fromFloatRGBA`) or names (`juce::Colours::red`). Many editors
@@ -240,17 +240,17 @@ The colours and the knob are defined in `tools/DayNightLookAndFeel.cpp`.
 1. Think about a name: Here, GainPlugin
 
 2. Apply Usage
-for the 4th step: sed -i 's/VerySimpleSynth/GainPlugin/g' *.*
+for the 4th step: sed -i 's/OscTutorialPlugin/GainPlugin/g' *.*
 for MacOS, see (https://stackoverflow.com/questions/4247068/sed-command-with-i-option-failing-on-mac-but-works-on-linux)
 for Windows: (https://stackoverflow.com/questions/17144355/how-can-i-replace-every-occurrence-of-a-string-in-a-file-with-powershell) 
 ```console    
   Get-ChildItem '*.*' -Recurse | ForEach {
-      (Get-Content $_ | ForEach  { $_ -replace 'VerySimpleSynth', 'YourNewProjectName' }) |
+      (Get-Content $_ | ForEach  { $_ -replace 'OscTutorialPlugin', 'YourNewProjectName' }) |
       Set-Content $_ }
 ```    
 or use the tools given by visual studio code (Crtl + Shift + H (replace in files)) and use your new diretory./YOUR_PLuggIn_Folder as a filter in "files to include".
 
-for the 5th step: rename 's/VerySimpleSynth/GainPlugin/' *.* or by hand (just 2 files)
+for the 5th step: rename 's/OscTutorialPlugin/GainPlugin/' *.* or by hand (just 2 files)
 
 for the 7th step switch off PresetHandlerGUI (for a simple gain not necessary) and WITH_DAYNIGHT
 (the day/night button needs the preset bar)

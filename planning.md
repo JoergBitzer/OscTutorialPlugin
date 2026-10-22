@@ -1,6 +1,11 @@
-# VerySimpleSynth -- planning
+# OscTutorialPlugin -- planning
 
-Status: version 1.0.0, the first public release (GitHub release for Windows, macOS, Linux), 2026-10-21.
+Status: version 1.0.1, 2026-10-22: renamed from **VerySimpleSynth** to **OscTutorialPlugin** (plugin, files,
+classes, namespace `vss` -> `otp`, manual, CI, GitHub repository, local folder). The plugin code `VsS1` stays, so DAW
+projects that use the plugin still find it (under the new name). The preset folder follows the plugin name
+(`.../Jade_Hochschule/OscTutorialPlugin`): factory presets are deployed there again, user presets of VerySimpleSynth stay
+in the old folder (copy them over by hand). Release 1.0.0 (2026-10-21) was published as VerySimpleSynth.
+Version 1.0.0, the first public release (GitHub release for Windows, macOS, Linux), 2026-10-21.
 1.0.0: manual/tutorial (docs/manual, PDF in every release zip), CI fixed for Linux, two oscillator fixes (see below).
 0.3.1: the preset "Init" always holds the default values (fix from the template, AAT2 0.0.4).
 0.3.0: spectrum on a second page of the big view (buttons Oscilloscope | Spectrum).
@@ -26,7 +31,7 @@ and measure the difference:
 | Oversampling 8x | naive at 8 fs, FIR low-pass (512 taps), decimation | about 19 dB better than naive | Gibbs ringing (the low-pass filter) |
 
 ## Decisions
-- Start from AAT2 (commit ea9b5a5) in `~/AudioDev/VerySimpleSynth`, its own git repository, JUCE 9.0.3 as submodule
+- Start from AAT2 (commit ea9b5a5) in `~/AudioDev/OscTutorialPlugin`, its own git repository, JUCE 9.0.3 as submodule
   (cloned from the local copy of the template, the URL points to GitHub). No GitHub repository yet.
 - Switches: `WITH_PRESETHANDLERGUI`, `WITH_DAYNIGHT`, `WITH_MIDIKEYBOARD`, `FACTORY_PRESETS`.
 - Plugin: `IS_SYNTH TRUE`, `NEEDS_MIDI_INPUT TRUE`, VST3 categories `Instrument Synth`, AU type `kAudioUnitType_MusicDevice`,
@@ -88,7 +93,7 @@ Frequency: `f = 440 Hz * 2^((note - 69 + 12*octave + cent/100 + bend)/12)`, limi
 ## Architecture
 ```
 PluginProcessor (template)  -- keyboard state merges the on-screen keyboard into the MIDI buffer
-  VerySimpleSynthAudio : SynchronBlockProcessor   (VerySimpleSynth.h/.cpp)
+  OscTutorialPluginAudio : SynchronBlockProcessor   (OscTutorialPlugin.h/.cpp)
       reads parameters once per synchronous block (2 ms)
       splits the block at MIDI events, renders the parts in between
       note stack, pitch bend, velocity, level (smoothed)
@@ -96,7 +101,7 @@ PluginProcessor (template)  -- keyboard state merges the on-screen keyboard into
       SpectrumCapture: FIFO of the oscillator output for the spectrum       (SpectrumCapture.h/.cpp)
       SimpleEnvelope (linear ADSR)                                          (SimpleEnvelope.h/.cpp)
       ScopeCapture: records 1-2 periods of the oscillator output            (ScopeCapture.h/.cpp)
-  VerySimpleSynthGUI  -- groups Oscillator / Envelope / Output, below two pages: Oscilloscope (Oscilloscope.h/.cpp)
+  OscTutorialPluginGUI  -- groups Oscillator / Envelope / Output, below two pages: Oscilloscope (Oscilloscope.h/.cpp)
                          and Spectrum (Spectrum.h/.cpp, FFT from juce_dsp)
 ```
 The algorithm files do not include any GUI module (they can be tested headless).
@@ -240,7 +245,7 @@ a phase lead. The same method works for any non-linear process, which makes it t
 - Snapshots of both pages (Tester `--click Spectrum`), both themes; Debug build without warnings.
 
 ## Test results 0.2.0 (2026-10-21, Linux, 48 kHz)
-`tools/analysis/measure_models.py build/VerySimpleSynth_Tester 60 96 108` (Debug build). alias = energy outside the
+`tools/analysis/measure_models.py build/OscTutorialPlugin_Tester 60 96 108` (Debug build). alias = energy outside the
 harmonics and DC in dB (floor of the measurement about -57 dB at C4, -93 dB at C7); max = largest value (1.18 = Gibbs
 overshoot of a jump of 2); corr = correlation with the wavetable output.
 

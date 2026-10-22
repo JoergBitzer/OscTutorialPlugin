@@ -15,9 +15,9 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR) # standalone
     set(CMAKE_POSITION_INDEPENDENT_CODE ON) # needed on Linux for binary data (e.g. factory presets)
 endif()
 
-set(TARGET_NAME VerySimpleSynth)
+set(TARGET_NAME OscTutorialPlugin)
 
-project(${TARGET_NAME} VERSION 1.0.0)
+project(${TARGET_NAME} VERSION 1.0.1)
 
 if(NOT TARGET juce::juce_core) # JUCE not added by a parent project: use the submodule
     if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
@@ -68,7 +68,7 @@ juce_add_plugin(${TARGET_NAME}
     PLUGIN_MANUFACTURER_CODE IHAJ               # A four-character manufacturer id with at least one upper-case character
     PLUGIN_CODE VsS1                            # A unique four-character plugin id with at least one upper-case character
     FORMATS AU VST3 Standalone                  # The formats to build. Other valid formats are: AAX Unity VST AU AUv3
-    PRODUCT_NAME "VerySimpleSynth")     # The name of the final executable, which can differ from the target name
+    PRODUCT_NAME "OscTutorialPlugin")     # The name of the final executable, which can differ from the target name
 #
 # `juce_generate_juce_header` will create a JuceHeader.h for a given target, which will be generated
 # into your build tree. This should be included with `#include <JuceHeader.h>`. The include path for
@@ -89,7 +89,7 @@ target_sources(${TARGET_NAME}
     PRIVATE
         PluginEditor.cpp
         PluginProcessor.cpp
-        VerySimpleSynth.cpp
+        OscTutorialPlugin.cpp
         SimpleEnvelope.cpp
         ScopeCapture.cpp
         Oscilloscope.cpp

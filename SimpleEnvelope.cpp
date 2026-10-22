@@ -6,7 +6,7 @@ constexpr float kMsPerSecond = 1000.0f;
 constexpr float kMaxLevel = 1.0f;
 } // namespace
 
-namespace vss
+namespace otp
 {
 void SimpleEnvelope::prepare(double sampleRate)
 {
@@ -100,4 +100,4 @@ float SimpleEnvelope::samplesFromMs(float timeMs) const
     }
     return time / kMsPerSecond * static_cast<float>(m_sampleRate);
 }
-} // namespace vss
+} // namespace otp

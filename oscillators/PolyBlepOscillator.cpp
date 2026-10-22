@@ -8,7 +8,7 @@ constexpr double kReachTwoPoint = 1.0;  // the 2-point correction acts within 1 
 constexpr double kReachFourPoint = 2.0; // the 4-point correction within 2 samples
 } // namespace
 
-namespace vss
+namespace otp
 {
 PolyBlepOscillator::PolyBlepOscillator(Order order)
 : m_order(order)
@@ -120,4 +120,4 @@ float PolyBlepOscillator::processSample()
     advancePhase();
     return static_cast<float>(value);
 }
-} // namespace vss
+} // namespace otp
