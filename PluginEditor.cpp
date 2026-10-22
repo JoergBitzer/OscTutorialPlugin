@@ -5,12 +5,12 @@
 
 //==============================================================================
 #if WITH_MIDIKEYBOARD   
-VerySimpleSynthAudioProcessorEditor::VerySimpleSynthAudioProcessorEditor (VerySimpleSynthAudioProcessor& p)
+OscTutorialPluginAudioProcessorEditor::OscTutorialPluginAudioProcessorEditor (OscTutorialPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), m_processorRef (p), m_presetGUI(p.m_presets),
     	m_keyboard(m_processorRef.m_keyboardState, MidiKeyboardComponent::Orientation::horizontalKeyboard), 
         m_wheels(p.m_wheelState), m_editor(p,*p.m_parameterVTS)
 #else
-VerySimpleSynthAudioProcessorEditor::VerySimpleSynthAudioProcessorEditor (VerySimpleSynthAudioProcessor& p)
+OscTutorialPluginAudioProcessorEditor::OscTutorialPluginAudioProcessorEditor (OscTutorialPluginAudioProcessor& p)
     : AudioProcessorEditor (&p), m_processorRef (p), m_presetGUI(p.m_presets), m_editor(p,*p.m_parameterVTS)
 #endif
 {
@@ -47,7 +47,7 @@ VerySimpleSynthAudioProcessorEditor::VerySimpleSynthAudioProcessorEditor (VerySi
 #endif
 }
 
-VerySimpleSynthAudioProcessorEditor::~VerySimpleSynthAudioProcessorEditor()
+OscTutorialPluginAudioProcessorEditor::~OscTutorialPluginAudioProcessorEditor()
 {
 #if WITH_DAYNIGHT
     setLookAndFeel(nullptr);
@@ -56,11 +56,11 @@ VerySimpleSynthAudioProcessorEditor::~VerySimpleSynthAudioProcessorEditor()
         parameter->removeListener(this);
 }
 
-void VerySimpleSynthAudioProcessorEditor::parameterGestureChanged(int, bool gestureIsStarting)
+void OscTutorialPluginAudioProcessorEditor::parameterGestureChanged(int, bool gestureIsStarting)
 {
     if (!gestureIsStarting)
         return;
-    juce::MessageManager::callAsync([safeThis = juce::Component::SafePointer<VerySimpleSynthAudioProcessorEditor>(this)]
+    juce::MessageManager::callAsync([safeThis = juce::Component::SafePointer<OscTutorialPluginAudioProcessorEditor>(this)]
     {
         if (safeThis != nullptr)
             safeThis->m_presetGUI.setSomethingChanged();
@@ -68,7 +68,7 @@ void VerySimpleSynthAudioProcessorEditor::parameterGestureChanged(int, bool gest
 }
 
 #if WITH_DAYNIGHT
-void VerySimpleSynthAudioProcessorEditor::toggleTheme()
+void OscTutorialPluginAudioProcessorEditor::toggleTheme()
 {
     const bool day = m_lookAndFeel.getTheme() != jade::DayNightLookAndFeel::Theme::Day;
     const auto theme = day ? jade::DayNightLookAndFeel::Theme::Day : jade::DayNightLookAndFeel::Theme::Night;
@@ -81,7 +81,7 @@ void VerySimpleSynthAudioProcessorEditor::toggleTheme()
 #endif
 
 //==============================================================================
-void VerySimpleSynthAudioProcessorEditor::paint (juce::Graphics& g)
+void OscTutorialPluginAudioProcessorEditor::paint (juce::Graphics& g)
 {
     // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll (getLookAndFeel().findColour (juce::ResizableWindow::backgroundColourId));
@@ -91,7 +91,7 @@ void VerySimpleSynthAudioProcessorEditor::paint (juce::Graphics& g)
     juce::String text2display = "Hello World! V " + juce::String(PLUGIN_VERSION_MAJOR) + "." + juce::String(PLUGIN_VERSION_MINOR) + "." + juce::String(PLUGIN_VERSION_PATCH);
     g.drawFittedText (text2display, getLocalBounds(), juce::Justification::centred, 1);
 }
-void VerySimpleSynthAudioProcessorEditor::resized()
+void OscTutorialPluginAudioProcessorEditor::resized()
 {
     int height = getHeight();
     // necessary to change fontsize of comboboxes and PopUpmenus

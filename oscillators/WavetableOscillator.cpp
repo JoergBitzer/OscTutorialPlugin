@@ -1,7 +1,7 @@
 #include <cmath>
 #include "WavetableOscillator.h"
 
-namespace vss
+namespace otp
 {
 WavetableOscillator::WavetableOscillator(bool withLanczosSigma)
 : m_withLanczosSigma(withLanczosSigma)
@@ -170,4 +170,4 @@ double WavetableOscillator::lanczosSigma(int k, int numHarmonics)
     const double x = kPi * k / (numHarmonics + 1);
     return std::sin(x) / x;
 }
-} // namespace vss
+} // namespace otp

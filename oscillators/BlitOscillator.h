@@ -22,7 +22,7 @@
 #pragma once
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class BlitOscillator : public Oscillator
 {
@@ -52,4 +52,4 @@ private:
     double m_triangleRectangle = 0.0; // rectangle shifted by a quarter period: integrated, it gives the triangle
     double m_triangle = 0.0;
 };
-} // namespace vss
+} // namespace otp

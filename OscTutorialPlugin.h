@@ -22,13 +22,13 @@
 #include "SpectrumCapture.h"
 #include "Spectrum.h"
 
-class VerySimpleSynthAudioProcessor;
+class OscTutorialPluginAudioProcessor;
 
 // This is how we define our parameter as globals to use it in the audio processor as well as in the editor.
 // Everything about a parameter is defined here once; tools/ParameterSpec.h makes the parameter
 // (jade::makeParameter) and its help text (jade::helpText, e.g. as tooltip) from it.
 // Choice parameters (combo boxes): tools/ChoiceParameterSpec.h. The order of the choices must
-// match the enums vss::OscillatorModel and vss::Waveform in oscillators/Oscillator.h.
+// match the enums otp::OscillatorModel and otp::Waveform in oscillators/Oscillator.h.
 
 // ---------- oscillator ----------
 const struct
@@ -150,10 +150,10 @@ const struct
 }g_paramLevel;
 
 
-class VerySimpleSynthAudio : public SynchronBlockProcessor
+class OscTutorialPluginAudio : public SynchronBlockProcessor
 {
 public:
-    VerySimpleSynthAudio(VerySimpleSynthAudioProcessor* processor);
+    OscTutorialPluginAudio(OscTutorialPluginAudioProcessor* processor);
     void prepareToPlay(double sampleRate, int max_samplesPerBlock, int max_channels);
     virtual int processSynchronBlock(juce::AudioBuffer<float>&, juce::MidiBuffer& midiMessages, int NrOfBlocksSinceLastProcessBlock);
 
@@ -183,7 +183,7 @@ private:
     static constexpr double kPitchBendRangeSemitones = 2.0;
     static constexpr double kLevelRampSeconds = 0.02;
 
-	VerySimpleSynthAudioProcessor* m_processor;
+	OscTutorialPluginAudioProcessor* m_processor;
     int m_Latency = 0;
 
     // parameters (read once per synchronous block)
@@ -198,24 +198,24 @@ private:
     std::atomic<float>* m_level = nullptr;
 
     // all oscillator models; m_activeOscillator points to the chosen one
-    vss::NaiveOscillator m_naiveOscillator;
-    vss::WavetableOscillator m_wavetableOscillator { false };
-    vss::WavetableOscillator m_wavetableLanczosOscillator { true };
-    vss::PolyBlepOscillator m_polyBlepOscillator { vss::PolyBlepOscillator::Order::TwoPoint };
-    vss::PolyBlepOscillator m_polyBlep4Oscillator { vss::PolyBlepOscillator::Order::FourPoint };
-    vss::MinBlepOscillator m_minBlepOscillator;
-    vss::BlitOscillator m_blitOscillator;
-    vss::DpwOscillator m_dpwOscillator;
-    vss::OversamplingOscillator m_oversamplingOscillator;
-    // in the order of vss::OscillatorModel
-    std::vector<vss::Oscillator*> m_oscillators;
-    vss::Oscillator* m_activeOscillator = &m_naiveOscillator;
-    vss::OscillatorModel m_activeModel = vss::OscillatorModel::Naive;
+    otp::NaiveOscillator m_naiveOscillator;
+    otp::WavetableOscillator m_wavetableOscillator { false };
+    otp::WavetableOscillator m_wavetableLanczosOscillator { true };
+    otp::PolyBlepOscillator m_polyBlepOscillator { otp::PolyBlepOscillator::Order::TwoPoint };
+    otp::PolyBlepOscillator m_polyBlep4Oscillator { otp::PolyBlepOscillator::Order::FourPoint };
+    otp::MinBlepOscillator m_minBlepOscillator;
+    otp::BlitOscillator m_blitOscillator;
+    otp::DpwOscillator m_dpwOscillator;
+    otp::OversamplingOscillator m_oversamplingOscillator;
+    // in the order of otp::OscillatorModel
+    std::vector<otp::Oscillator*> m_oscillators;
+    otp::Oscillator* m_activeOscillator = &m_naiveOscillator;
+    otp::OscillatorModel m_activeModel = otp::OscillatorModel::Naive;
 
     ScopeCapture m_scope;
     SpectrumCapture m_spectrum;
 
-    vss::SimpleEnvelope m_envelope;
+    otp::SimpleEnvelope m_envelope;
 
     // monophonic voice: the held keys in the order they were pressed, the last one sounds
     std::vector<int> m_heldNotes;
@@ -227,10 +227,10 @@ private:
     juce::SmoothedValue<float> m_levelGain;
 };
 
-class VerySimpleSynthGUI : public juce::Component
+class OscTutorialPluginGUI : public juce::Component
 {
 public:
-	VerySimpleSynthGUI(VerySimpleSynthAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts);
+	OscTutorialPluginGUI(OscTutorialPluginAudioProcessor& p, juce::AudioProcessorValueTreeState& apvts);
 
 	void paint(juce::Graphics& g) override;
 	void resized() override;
@@ -258,7 +258,7 @@ private:
     void placeChoice(Choice& choice, juce::Rectangle<int>& area);
     float scaleFactor() const;
 
-	VerySimpleSynthAudioProcessor& m_processor;
+	OscTutorialPluginAudioProcessor& m_processor;
     juce::AudioProcessorValueTreeState& m_apvts;
 
     juce::GroupComponent m_oscillatorGroup;

@@ -22,7 +22,7 @@ explains the template -- replace it with your own.
 
 ## The manual (docs/manual)
 
-`docs/manual/ManualVerySimpleSynth.tex` is a LaTeX template with the usual sections: introduction,
+`docs/manual/ManualOscTutorialPlugin.tex` is a LaTeX template with the usual sections: introduction,
 installation, how to use (numbered screenshot), controls, how it works, source code, legal stuff.
 
 1. Replace "YourName", "YourGitHubName" and "YourCompany" (your `COMPANY_NAME` from CMakeLists.txt)
@@ -30,10 +30,10 @@ installation, how to use (numbered screenshot), controls, how it works, source c
 2. Write the text for your plugin: what it is for, how to use it, how it works.
 3. Build it (in `docs/manual`):
    ```console
-   pdflatex ManualVerySimpleSynth.tex
-   pdflatex ManualVerySimpleSynth.tex
+   pdflatex ManualOscTutorialPlugin.tex
+   pdflatex ManualOscTutorialPlugin.tex
    ```
-   (twice, so the section references are right; `latexmk -pdf ManualVerySimpleSynth.tex` also works).
+   (twice, so the section references are right; `latexmk -pdf ManualOscTutorialPlugin.tex` also works).
 4. Commit the PDF: the release workflow puts `docs/manual/*.pdf` into every release zip.
 
 LaTeX writes helper files (`*.aux`, `*.log`, `*.out`, ...). Add them to your `.gitignore`, e.g.
@@ -45,14 +45,14 @@ LaTeX writes helper files (`*.aux`, `*.log`, `*.out`, ...). Add them to your `.g
 **List of controls:** the table in the "Controls" section is the file `controls.tex`, generated from
 your parameter definitions (range, default and the `help` line):
 ```console
-VerySimpleSynth_Tester --manual tex > docs/manual/controls.tex
+OscTutorialPlugin_Tester --manual tex > docs/manual/controls.tex
 ```
 Run it again whenever you change a parameter. (`--manual md` gives the same list for the README.)
 
 **Screenshot:** take it from the real plugin, e.g. with a preset and audio playing, so meters and
 displays show something:
 ```console
-VerySimpleSynth_Tester snapshot docs/manual/images/GUI.png --preset mypreset.xml --audio in.wav
+OscTutorialPlugin_Tester snapshot docs/manual/images/GUI.png --preset mypreset.xml --audio in.wav
 ```
 For the numbered picture in "How to use", add the numbers with an image editor (e.g. GIMP) or with
 ImageMagick, and save it as `images/GUI_Numbers.png`:

@@ -16,9 +16,9 @@
 */
 #pragma once
 
-namespace vss
+namespace otp
 {
-// the order must match g_paramWaveform and g_paramModel in VerySimpleSynth.h
+// the order must match g_paramWaveform and g_paramModel in OscTutorialPlugin.h
 enum class Waveform
 {
     Sine = 0,
@@ -102,4 +102,4 @@ class NaiveOscillator : public Oscillator
 public:
     float processSample() override;
 };
-} // namespace vss
+} // namespace otp

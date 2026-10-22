@@ -17,7 +17,7 @@
 #pragma once
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class DpwOscillator : public Oscillator
 {
@@ -27,4 +27,4 @@ public:
     // the antiderivative of the naive waveform with respect to the phase (periodic)
     static double antiderivative(Waveform waveform, double phase);
 };
-} // namespace vss
+} // namespace otp

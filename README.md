@@ -1,4 +1,4 @@
-# VerySimpleSynth
+# OscTutorialPlugin
 
 A very simple monophonic synthesizer for teaching: one oscillator, one ADSR envelope -- and a switch between nine
 ways to build the oscillator (naive, wavetable, wavetable with Lanczos sigma, polyBLEP, 4-point polyBLEP, minBLEP, BLIT,
@@ -6,11 +6,13 @@ DPW, oversampling), so you
 can hear, see and measure aliasing and the side effects of each method. A large view shows the oscilloscope (1 or 2
 periods) or, on its second page, the spectrum.
 
-![VerySimpleSynth](docs/images/GUI.png)
+(Until version 1.0.0 it was called VerySimpleSynth.)
 
-**Download:** [Releases](https://github.com/JoergBitzer/VerySimpleSynth/releases) (Windows, macOS, Linux; VST3,
+![OscTutorialPlugin](docs/images/GUI.png)
+
+**Download:** [Releases](https://github.com/JoergBitzer/OscTutorialPlugin/releases) (Windows, macOS, Linux; VST3,
 AU on macOS, Standalone). The manual in every zip is also a tutorial about the oscillator models
-([docs/manual/ManualVerySimpleSynth.pdf](docs/manual/ManualVerySimpleSynth.pdf)).
+([docs/manual/ManualOscTutorialPlugin.pdf](docs/manual/ManualOscTutorialPlugin.pdf)).
 
 ## Features
 * One oscillator: waveform Sine, Triangle, Rectangle, Sawtooth; Octave (-3..+3) and Fine tune (+-100 cent)
@@ -66,14 +68,14 @@ Measured energy outside the harmonics (sawtooth, note C7 = 2093 Hz, 48 kHz, `too
 | Release | 1 ms - 5000 ms | 300 ms | Time to fall to silence after the key is released. |
 | Level | -60.0 dB - 0.0 dB | -12.0 dB | Output level (at velocity 127). |
 
-(generated with `VerySimpleSynth_Tester --manual md`)
+(generated with `OscTutorialPlugin_Tester --manual md`)
 
 ## The code
 | File | What |
 |---|---|
 | `oscillators/` | the oscillator models, one file each -- start reading with `Oscillator.h` |
 | `SimpleEnvelope.h/.cpp` | the linear ADSR |
-| `VerySimpleSynth.h/.cpp` | parameters, MIDI handling (note stack, pitch bend), rendering, GUI |
+| `OscTutorialPlugin.h/.cpp` | parameters, MIDI handling (note stack, pitch bend), rendering, GUI |
 | `ScopeCapture.h/.cpp`, `Oscilloscope.h/.cpp` | recording (audio thread) and display (GUI) of the oscilloscope |
 | `SpectrumCapture.h/.cpp`, `Spectrum.h/.cpp` | FIFO (audio thread) and FFT display (GUI) of the spectrum |
 | `tools/analysis/measure_models.py` | measures aliasing, overshoot and phase of all models (numpy) |
@@ -87,7 +89,7 @@ The plugin is made from the [AdvancedAudioTemplate](https://github.com/JoergBitz
 ```console
 git submodule update --init
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release --target VerySimpleSynth_VST3 VerySimpleSynth_Standalone
+cmake --build build --config Release --target OscTutorialPlugin_VST3 OscTutorialPlugin_Standalone
 ```
 
 ## License

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<VerySimpleSynthVTS presetname="BLIT Rectangle" category="Unknown" bank="Factory" presetversion="3">
+<OscTutorialPluginVTS presetname="BLIT Rectangle" category="Unknown" bank="Factory" presetversion="3">
   <PARAM id="Model" value="6.0"/>
   <PARAM id="Waveform" value="2.0"/>
   <PARAM id="Octave" value="0.0"/>
@@ -10,4 +10,4 @@
   <PARAM id="Sustain" value="70.0"/>
   <PARAM id="Release" value="300.0"/>
   <PARAM id="Level" value="-12.0"/>
-</VerySimpleSynthVTS>
+</OscTutorialPluginVTS>

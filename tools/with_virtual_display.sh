@@ -3,7 +3,7 @@
 # nothing appears on the desktop of the person who works on this machine (Linux).
 #
 # Usage:  tools/with_virtual_display.sh <command> [arguments...]
-#   e.g.  tools/with_virtual_display.sh build/VerySimpleSynth_Tester snapshot gui.png --seconds 1
+#   e.g.  tools/with_virtual_display.sh build/OscTutorialPlugin_Tester snapshot gui.png --seconds 1
 #
 # xvfb-run alone is enough for pluginval, but JUCE's top-level windows (the Tester's snapshot, the Standalone) need a window
 # manager in the display, otherwise an X error ends the program ("BadAtom"). openbox is used if it is installed.

@@ -12,7 +12,7 @@
     - createUserSettings(): the per-user settings file (in the preset folder) where the choice is stored.
 
     Your own components follow the theme if they take their colours from the LookAndFeel, e.g.
-    g.setColour(getLookAndFeel().findColour(juce::Label::textColourId)) -- see VerySimpleSynthGUI::paint().
+    g.setColour(getLookAndFeel().findColour(juce::Label::textColourId)) -- see OscTutorialPluginGUI::paint().
     License: MIT
 */
 #pragma once

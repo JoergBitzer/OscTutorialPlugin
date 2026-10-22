@@ -1,14 +1,14 @@
-# CLAUDE.md -- instructions for Claude Code in VerySimpleSynth (made from the AdvancedAudioTemplate, AAT2)
+# CLAUDE.md -- instructions for Claude Code in OscTutorialPlugin (made from the AdvancedAudioTemplate, AAT2)
 
 ## The project
-VerySimpleSynth: a monophonic synth for teaching (one oscillator in three models, ADSR), a JUCE plugin
+OscTutorialPlugin: a monophonic synth for teaching (one oscillator in nine models, oscilloscope and spectrum, ADSR); called VerySimpleSynth until 1.0.0, a JUCE plugin
 (VST3, AU on macOS, Standalone) made from the AdvancedAudioTemplate, branch AAT2. Plan, decisions, status
 and ideas: `planning.md` (keep it up to date).
-- `VerySimpleSynth.h/.cpp`: the parameters (structs), the synth (`VerySimpleSynthAudio`: MIDI, note stack,
-  fixed-size blocks via `SynchronBlockProcessor`) and the GUI (`VerySimpleSynthGUI`).
+- `OscTutorialPlugin.h/.cpp`: the parameters (structs), the synth (`OscTutorialPluginAudio`: MIDI, note stack,
+  fixed-size blocks via `SynchronBlockProcessor`) and the GUI (`OscTutorialPluginGUI`).
 - `oscillators/`: the oscillator models, one file each (`Oscillator.h`: base class, naive model, shared helpers;
   wavetable without/with Lanczos sigma, polyBLEP 2/4-point, minBLEP, BLIT, DPW, oversampling). The order of
-  `vss::OscillatorModel` must match `g_paramModel`. The list is ordered for teaching (author's decision); presets store
+  `otp::OscillatorModel` must match `g_paramModel`. The list is ordered for teaching (author's decision); presets store
   the index, so renumber `res/presets` (and raise `presetversion`) when the order changes.
   `SimpleEnvelope.h/.cpp`: linear ADSR; `ScopeCapture.h/.cpp`: recording for the oscilloscope (audio thread never
   waits); `SpectrumCapture.h/.cpp`: lock-free FIFO for the spectrum. No GUI code in these files.
@@ -33,13 +33,13 @@ and ideas: `planning.md` (keep it up to date).
 ```console
 git submodule update --init                      # JUCE (pinned submodule), once
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug -DAAT_BUILD_TESTER=ON
-cmake --build build --target VerySimpleSynth_VST3 VerySimpleSynth_Standalone VerySimpleSynth_Tester
+cmake --build build --target OscTutorialPlugin_VST3 OscTutorialPlugin_Standalone OscTutorialPlugin_Tester
 ```
 Develop with the Debug build (JUCE assertions are on); releases are Release builds made by CI.
 For the review in a DAW, build Release as well (a Debug build is slow there and stops at assertions):
 ```console
 cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
-cmake --build build-release --target VerySimpleSynth_VST3 VerySimpleSynth_Standalone
+cmake --build build-release --target OscTutorialPlugin_VST3 OscTutorialPlugin_Standalone
 ```
 Inside a bigger CMake project (e.g. AudioDev) this folder can also be added with `add_subdirectory`;
 then the parent's JUCE is used.
@@ -66,7 +66,7 @@ then the parent's JUCE is used.
 The author works on the same machine. Everything that opens a window runs in a **virtual display**, never on the real desktop:
 - pluginval: `tools/run_pluginval.sh ...` -- on Linux it starts itself under `xvfb-run -a` if xvfb is installed
   (`AAT_REAL_DISPLAY=1` switches that off, only for a machine nobody works at);
-- Tester snapshots, the Standalone and any other GUI program: `tools/with_virtual_display.sh build/VerySimpleSynth_Tester snapshot gui.png ...`
+- Tester snapshots, the Standalone and any other GUI program: `tools/with_virtual_display.sh build/OscTutorialPlugin_Tester snapshot gui.png ...`
   (it starts openbox inside the virtual display: JUCE's top-level windows end with an X error "BadAtom" on a bare Xvfb);
 - never move the mouse, click, type into other windows or take screenshots of the desktop (xdotool, XTest, `import -window root`,
   computer-use, browser automation) without asking first and getting a yes for that specific action. Tests that need mouse or key
@@ -77,11 +77,11 @@ The author works on the same machine. Everything that opens a window runs in a *
 
 ## Before every commit
 1. Build (Debug) without errors and warnings.
-2. `tools/run_pluginval.sh build/VerySimpleSynth_artefacts/Debug/VST3/VerySimpleSynth.vst3`
+2. `tools/run_pluginval.sh build/OscTutorialPlugin_artefacts/Debug/VST3/OscTutorialPlugin.vst3`
    -- all runs SUCCESS, zero JUCE assertions.
 3. If the sound should not change (refactoring): render before and after with
-   `VerySimpleSynth_Tester render in.wav out.wav` and compare the files (identical = same sound).
-4. After GUI changes (in a virtual display, `xvfb-run -a`): look at `VerySimpleSynth_Tester snapshot gui.png` (both themes, see below).
+   `OscTutorialPlugin_Tester render in.wav out.wav` and compare the files (identical = same sound).
+4. After GUI changes (in a virtual display, `xvfb-run -a`): look at `OscTutorialPlugin_Tester snapshot gui.png` (both themes, see below).
 
 ## Conventions
 - Readable code (code style of the author, binding): no one-liners, no magic numbers, no magic
@@ -92,7 +92,7 @@ The author works on the same machine. Everything that opens a window runs in a *
 - Headers include as little as possible: forward declare, include only what is used, no includes in
   headers just to pass them on.
 - Member variables `m_...`, constants `kName`.
-- Parameters: one struct per parameter in `VerySimpleSynth.h` (ID, name, unit, range, default,
+- Parameters: one struct per parameter in `OscTutorialPlugin.h` (ID, name, unit, range, default,
   `numDecimalPlaces`, `logFrequency`, `help`); create it with `jade::makeParameter(spec)`; show
   `jade::helpText(spec)` as tooltip. Don't build `AudioParameterFloat`s by hand.
 - On/off parameters: not `juce::AudioParameterBool` (it keeps the raw value a host sends, so pluginval 2.x fails
@@ -125,4 +125,4 @@ The author works on the same machine. Everything that opens a window runs in a *
 Windows, macOS (Universal, VST3 + AU) and Linux, tests with pluginval (and `auval` on macOS), and
 creates the GitHub release with one zip per system (plugins, Standalone, `release/ReadMeFirst.txt`,
 licenses, `docs/manual/*.pdf`). Before a release: version raised, manual updated
-(`\pluginversion`, `controls.tex` via `VerySimpleSynth_Tester --manual tex`), PDF rebuilt and committed.
+(`\pluginversion`, `controls.tex` via `OscTutorialPlugin_Tester --manual tex`), PDF rebuilt and committed.

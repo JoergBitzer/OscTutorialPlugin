@@ -17,7 +17,7 @@
 #pragma once
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class PolyBlepOscillator : public Oscillator
 {
@@ -40,4 +40,4 @@ public:
 private:
     Order m_order;
 };
-} // namespace vss
+} // namespace otp

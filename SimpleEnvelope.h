@@ -11,7 +11,7 @@
 */
 #pragma once
 
-namespace vss
+namespace otp
 {
 class SimpleEnvelope
 {
@@ -50,4 +50,4 @@ private:
     float m_releaseMs = 300.0f;
     float m_releaseStep = 0.0f; // computed at noteOff (the release starts at the current level)
 };
-} // namespace vss
+} // namespace otp

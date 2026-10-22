@@ -18,7 +18,7 @@
 #include <vector>
 #include "Oscillator.h"
 
-namespace vss
+namespace otp
 {
 class MinBlepOscillator : public Oscillator
 {
@@ -46,4 +46,4 @@ private:
     std::vector<double> m_corrections;       // ring buffer of the corrections for the next samples
     int m_readIndex = 0;
 };
-} // namespace vss
+} // namespace otp
